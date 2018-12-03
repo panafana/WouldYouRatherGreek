@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#343434</color>
+    <color name="colorPrimaryDark">#343434</color>
+    <color name="colorAccent">#343434</color>
+    <color name="mpampas">#ffef67</color>
+    <color name="white">#ffffff</color>
+    <color name="test">#75ffffff</color>
+    <color name="tint_blue">#00b0ff</color>
+    <color name="tint_red">#ff0032</color>
+    <color name="tint_whitee">#e5e5e5</color>
+</resources>
