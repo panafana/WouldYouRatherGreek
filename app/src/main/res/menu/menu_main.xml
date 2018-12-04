@@ -7,5 +7,10 @@
         android:orderInCategory="1"
         android:title="Reset"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/submitQuestion"
+        android:orderInCategory="2"
+        android:title="Υποβολή ερώτησης"
+        app:showAsAction="never" />
 
 </menu>

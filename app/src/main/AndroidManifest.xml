@@ -30,7 +30,8 @@
         <activity
             android:name=".RegisterActivity"
             android:label="@string/title_activity_register" />
-        <activity android:name=".SelectGender"></activity>
+        <activity android:name=".SelectGender" />
+        <activity android:name=".SubmitQuestion"></activity>
     </application>
 
 </manifest>
