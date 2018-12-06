@@ -3,6 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.panafana.cryptonew.MainActivity">
     <item
+        android:id="@+id/changeTextColor"
+        android:orderInCategory="3"
+        android:title="Αλλαγή χρώματος γραμμάτων"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/reset"
         android:orderInCategory="1"
         android:title="Reset"
@@ -12,5 +18,6 @@
         android:orderInCategory="2"
         android:title="Υποβολή ερώτησης"
         app:showAsAction="never" />
+
 
 </menu>

@@ -163,7 +163,7 @@
         android:layout_height="222dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="4dp"
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="μμνα αργείς πάντα 10 λεπτά"
@@ -172,18 +172,17 @@
         android:textColor="@color/colorAccent"
         android:textSize="30sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintBottom_toTopOf="@+id/or2"
         app:layout_constraintEnd_toEndOf="@+id/upperImage"
         app:layout_constraintStart_toStartOf="@+id/upperImage"
         app:layout_constraintTop_toTopOf="@+id/upperImage"
-        app:layout_constraintVertical_bias="0.17000002" />
+        app:layout_constraintVertical_bias="0.38" />
 
     <TextView
         android:id="@+id/textViewDown"
         android:layout_width="324dp"
         android:layout_height="222dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="sans-serif"
         android:gravity="center"
@@ -197,7 +196,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideline5"
         app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="@+id/lowerImage"
-        app:layout_constraintTop_toTopOf="@+id/lowerImage"
-        app:layout_constraintVertical_bias="0.6" />
+        app:layout_constraintTop_toBottomOf="@+id/or2"
+        app:layout_constraintVertical_bias="0.19" />
 
 </android.support.constraint.ConstraintLayout>
