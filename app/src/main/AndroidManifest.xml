@@ -26,12 +26,15 @@
         </activity>
         <activity
             android:name=".MainActivity"
+            android:hardwareAccelerated="true"
             android:label="@string/action_bar" />
         <activity
             android:name=".RegisterActivity"
             android:label="@string/title_activity_register" />
         <activity android:name=".SelectGender" />
-        <activity android:name=".SubmitQuestion"></activity>
+        <activity android:name=".SubmitQuestion" />
+        <activity android:name=".Comments" android:windowSoftInputMode="adjustResize">
+        </activity>
     </application>
 
 </manifest>
