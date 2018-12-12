@@ -2,10 +2,14 @@ package com.example.panaf.wouldyourather;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -60,8 +64,10 @@ public class MainActivity extends AppCompatActivity {
     Context ctx = this;
     private String jsonResult;
     private String jsonStatsResult;
+    private String jsonCommentResult;
     private String url = "http://83.212.84.230/getquestions.php";
     private String getStatsUrl ="http://83.212.84.230/getstats.php";
+    private String commentsUrl ="http://83.212.84.230/getcomments.php";
     int globalI =0;
     int showstats;
     float x=0,y=0,xu=0,yu=0;
@@ -73,9 +79,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         accessWebService();
+        GetStats g = new GetStats();
+        g.execute(new String[] {getStatsUrl});
         SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
         globalI=SP2.getInt("state",0);
         showstats=1;
+        playGame();
         final ImageView or = findViewById(R.id.or);
         or.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
@@ -84,12 +93,16 @@ public class MainActivity extends AppCompatActivity {
                     //Log.d("or", "or clicked");
                     or.setImageResource(R.drawable.button_pressed);
                     or.setColorFilter(ctx.getResources().getColor(R.color.tint_whitee),PorterDuff.Mode.MULTIPLY);
+
                     return true;
                 }
                 else if(event.getAction() == MotionEvent.ACTION_UP){
                     //do something when let go
                     or.setImageResource(R.drawable.button_unpressed);
-                    or.performClick();
+                    if(showstats==0){
+                        or.performClick();
+                    }
+
                     or.setColorFilter(null);
                     return true;
                 }
@@ -100,8 +113,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.d("or","clicked");
+                GetComments gc = new GetComments();
+                gc.execute(new String[]{commentsUrl,Integer.toString(globalI-1)});
+
+
             }
         });
+    }
+
+    void resetGameState (){
+        globalI = 0;
+        SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
+        SharedPreferences.Editor editor = SP2.edit();
+        editor.putInt("state", 0);
+        editor.apply();
+        editor.commit();
     }
 
     ArrayList<Integer> refreshStats(String key){
@@ -180,7 +206,8 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-                Toast.makeText(ctx, "Connection Error", Toast.LENGTH_LONG).show();
+                runOnUiThread(() -> Toast.makeText(ctx, "Connection Error", Toast.LENGTH_LONG).show());
+                resetGameState();
                 return null;
             }
             return null;
@@ -190,313 +217,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             makeLists();
-            SP = getSharedPreferences("questions", MODE_PRIVATE);
-            SharedPreferences SP3 = getSharedPreferences("gender",MODE_PRIVATE);
-            final String genderS = SP3.getString("gender","other");
-            Log.d("saved ", String.valueOf(SP.getAll()));
-            final SharedPreferences.Editor editor = SP2.edit();
-            Gson gson = new Gson();
-            String json = SP.getString("questions", null);
-            Type type = new TypeToken<ArrayList<String>>() {}.getType();
-            ArrayList<String>  set = gson.fromJson(json, type);
-            Gson gson2 = new Gson();
-            String json2 = SP.getString("category", null);
-            Type type2 = new TypeToken<ArrayList<String>>() {}.getType();
-            ArrayList<String>  set2 = gson2.fromJson(json2, type2);
-            Gson gson3 = new Gson();
-            String json3 = SP.getString("ids", null);
-            Type type3 = new TypeToken<ArrayList<String>>() {}.getType();
-            ArrayList<String>  set3 = gson3.fromJson(json3, type3);
 
-            final ArrayList<String> questions = new ArrayList<>(set);
-            ArrayList<String> categories = new ArrayList<>(set2);
-            ArrayList<String> ids = new ArrayList<>(set3);
-
-            final ImageView upperImage = findViewById(R.id.upperImage);
-            final ImageView lowerImage = findViewById(R.id.lowerImage);
-            final ImageView upperImage2 = findViewById(R.id.upperImage2);
-            final ImageView lowerImage2 = findViewById(R.id.lowerImage2);
-            final TextView upperText = findViewById(R.id.textViewUp);
-            final TextView lowerText = findViewById(R.id.textViewDown);
-
-            String[] qst = questions.get(globalI).split("@",2);
-            System.out.println(qst[0]);
-            System.out.println(qst[1]);
-            upperText.setText(qst[0]);
-            lowerText.setText(qst[1]);
-            //upperText.setShadowLayer(2, 2, 4, Color.BLACK);
-            //lowerText.setShadowLayer(10, 2, 4, Color.BLACK);
-            nextQuestion();
-
-            upperImage.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent2) {
-                    float x2=0,y2=0;
-                    if(motionEvent2.getAction() == MotionEvent.ACTION_DOWN){
-                        //do something when pressed down
-                        //Log.d("or", "or clicked");
-                        upperImage.setVisibility(View.INVISIBLE);
-                        upperImage2.setVisibility(View.VISIBLE);
-                        //upperImage.setColorFilter(ctx.getResources().getColor(R.color.tint_blue),PorterDuff.Mode.MULTIPLY);
-                        xu=motionEvent2.getX();
-                        yu=motionEvent2.getY();
-                        return true;
-                    }
-                    else if(motionEvent2.getAction() == MotionEvent.ACTION_UP ){
-                        x2=motionEvent2.getX();
-                        y2=motionEvent2.getY();
-                        //Log.d("absx ",Float.toString(abs(x2-xu)));
-                        //Log.d("absy ",Float.toString(abs(y2-yu)));
-                        upperImage2.setVisibility(View.INVISIBLE);
-                        upperImage.setVisibility(View.VISIBLE);
-                        //do something when let go
-                        if((abs(x2-xu))>200||(abs(y2-yu))>200){
-                            //upperImage.setColorFilter(null);
-                            return true;
-                        }else{
-                            upperImage.performClick();
-                            //upperImage.setColorFilter(null);
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            });
-
-            lowerImage.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent) {
-                   float x2=0,y2=0;
-                    if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-                        //do something when pressed down
-                        //Log.d("or", "or clicked");
-                        //lowerImage.setImageResource(R.drawable.red_pressed);
-                        lowerImage.setVisibility(View.INVISIBLE);
-                        lowerImage2.setVisibility(View.VISIBLE);
-                        //lowerImage.setColorFilter(ctx.getResources().getColor(R.color.tint_red),PorterDuff.Mode.MULTIPLY);
-                        x=motionEvent.getX();
-                        y=motionEvent.getY();
-                        return true;
-                    }
-                    else if(motionEvent.getAction() == MotionEvent.ACTION_UP ){
-                        x2=motionEvent.getX();
-                        y2=motionEvent.getY();
-                        //Log.d("absx ",Float.toString(abs(x2-x)));
-                        //Log.d("absy ",Float.toString(abs(y2-y)));
-                        //lowerImage.setImageResource(R.drawable.red_unpressed);
-                        lowerImage.setVisibility(View.VISIBLE);
-                        lowerImage2.setVisibility(View.INVISIBLE);
-                        //do something when let go
-                        if((abs(x2-x))>200||(abs(y2-y))>200){
-                            //lowerImage.setColorFilter(null);
-                            return true;
-                        }else{
-                            lowerImage.performClick();
-                            //lowerImage.setColorFilter(null);
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            });
-
-            upperImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
-                    ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
-                    ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
-                    ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
-                    ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
-                    ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
-                    if(showstats==0) {
-                        //Log.d("click", "Up clicked");
-                        //send correct gender on stats submit
-                        if(genderS.equals("male")){
-                            submitStats ss = new submitStats(globalI - 1, 0, 1, 0, 0);
-                            ss.execute((Void) null);
-                        }else if(genderS.equals("female")){
-                            submitStats ss = new submitStats(globalI - 1, 0, 0, 1, 0);
-                            ss.execute((Void) null);
-                        }else{
-                            submitStats ss = new submitStats(globalI - 1, 0, 0, 0, 1);
-                            ss.execute((Void) null);
-                        }
-                        GetStats gs = new GetStats();
-                        gs.execute(new String[] {getStatsUrl});
-                        System.out.println(other0);
-
-                        if (globalI < questions.size() - 1) {
-                            String[] qst = questions.get(globalI).split("@", 2);
-                            upperText.setText(qst[0]);
-                            lowerText.setText(qst[1]);
-                            System.out.println(qst[0]);
-                            System.out.println(qst[1]);
-                            nextQuestion();
-                            editor.putInt("state", globalI);
-                            editor.apply();
-                            editor.commit();
-                        } else {
-                            Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
-                            globalI =0;
-                            SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
-                            SharedPreferences.Editor editor = SP2.edit();
-                            editor.putInt("state",0);
-                            editor.apply();
-                            editor.commit();
-                        }
-                        showstats=1;
-                    }else{
-                        int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
-                        if(globalI>1){
-                             male0i =(male0.get(globalI-1));
-                             female0i=(female0.get(globalI-1));
-                             other0i = (other0.get(globalI-1));
-                             male1i=(male1.get(globalI-1));
-                             female1i=(female1.get(globalI-1));
-                            other1i=(other1.get(globalI-1));
-                        }else{
-                             male0i =(male0.get(globalI));
-                             female0i=(female0.get(globalI));
-                             other0i = (other0.get(globalI));
-                             male1i=(male1.get(globalI));
-                             female1i=(female1.get(globalI));
-                             other1i=(other1.get(globalI));
-                        }
-                        float lowerstatsmale = (float) (male1i)/(float) (male0i+male1i);
-                        float lowerstatfesmale = (float) (female1i)/(float) (female0i+female1i);
-                        float lowerstatsother = (float) (other1i)/(float) (other1i+other0i);
-                        float upperstatsmale = (float) (male0i)/(float) (male0i+male1i);
-                        float upperstatfesmale = (float) (female0i)/(float) (female0i+female1i);
-                        float upperstatsother = (float) (other0i)/(float) (other0i+other1i);
-                        float lowerstats =(float)(male1i+female1i+other1i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
-                        float upperstats =(float)(male0i+female0i+other0i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
-                        //System.out.println("lowerstats "+lowerstats);
-                        int lowerstatsshow = (int) (lowerstats*100);
-                        int upperstatsshow = (int) (upperstats*100);
-                        int lowerstatsmaleshow = (int) (lowerstatsmale*100);
-                        int lowerstatsfemaleshow = (int) (lowerstatfesmale*100);
-                        int lowerstatsothershow = (int)(lowerstatsother*100);
-                        int upperstatsmaleshow = (int) (upperstatsmale*100);
-                        int upperstatsfemaleshow = (int) (upperstatfesmale*100);
-                        int upperstatsothershow = (int)(upperstatsother*100);
-                        String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")";
-                        String lowerString2 = Integer.toString(lowerstatsshow)+"%"+"\n";
-                        SpannableString ss1=  new SpannableString(lowerString2+lowerString1);
-                        ss1.setSpan(new RelativeSizeSpan(0.8f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
-                        //System.out.println("other0 "+other0i);
-                        //System.out.println("other1 "+other1i);
-                        String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")";
-                        String upperString2 =Integer.toString(upperstatsshow)+"%"+"\n";
-                        SpannableString ss2=  new SpannableString(upperString2+upperString1);
-                        ss2.setSpan(new RelativeSizeSpan(0.8f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
-                        lowerText.setText( ss1);
-                        //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
-                        //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
-                        upperText.setText(ss2);
-                        showstats=0;
-                    }
-                }
-            });
-
-            lowerImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
-                    ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
-                    ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
-                    ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
-                    ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
-                    ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
-                    if(showstats==0) {
-                        //Log.d("click", "Down clicked");
-                        if(genderS.equals("male")){
-                            submitStats ss = new submitStats(globalI - 1, 1, 1, 0, 0);
-                            ss.execute((Void) null);
-                        }else if(genderS.equals("female")){
-                            submitStats ss = new submitStats(globalI - 1, 1, 0, 1, 0);
-                            ss.execute((Void) null);
-                        }else{
-                            submitStats ss = new submitStats(globalI - 1, 0, 0, 0, 1);
-                            ss.execute((Void) null);
-                        }
-                        GetStats gs = new GetStats();
-                        gs.execute(new String[] {getStatsUrl});
-
-                        if (globalI < questions.size() - 1) {
-                            String[] qst = questions.get(globalI).split("@", 2);
-                            lowerText.setText(qst[1]);
-                            upperText.setText(qst[0]);
-                            System.out.println(qst[0]);
-                            System.out.println(qst[1]);
-                            nextQuestion();
-                            editor.putInt("state", globalI);
-                            editor.apply();
-                            editor.commit();
-                        } else {
-                            Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
-                            globalI =0;
-                            SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
-                            SharedPreferences.Editor editor = SP2.edit();
-                            editor.putInt("state",0);
-                            editor.apply();
-                            editor.commit();
-                        }
-                        showstats=1;
-                    }else{
-                        int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
-                        if(globalI>1){
-                            male0i =(male0.get(globalI-1));
-                            female0i=(female0.get(globalI-1));
-                            other0i = (other0.get(globalI-1));
-                            male1i=(male1.get(globalI-1));
-                            female1i=(female1.get(globalI-1));
-                            other1i=(other1.get(globalI-1));
-                        }else{
-                            male0i =(male0.get(globalI));
-                            female0i=(female0.get(globalI));
-                            other0i = (other0.get(globalI));
-                            male1i=(male1.get(globalI));
-                            female1i=(female1.get(globalI));
-                            other1i=(other1.get(globalI));
-                        }
-                        float lowerstatsmale = (float) (male1i)/(float) (male0i+male1i);
-                        float lowerstatfesmale = (float) (female1i)/(float) (female0i+female1i);
-                        float lowerstatsother = (float) (other1i)/(float) (other1i+other0i);
-                        float upperstatsmale = (float) (male0i)/(float) (male0i+male1i);
-                        float upperstatfesmale = (float) (female0i)/(float) (female0i+female1i);
-                        float upperstatsother = (float) (other0i)/(float) (other0i+other1i);
-                        float lowerstats =(float)(male1i+female1i+other1i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
-                        float upperstats =(float)(male0i+female0i+other0i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
-                        //System.out.println("lowerstats "+lowerstats);
-                        int lowerstatsshow = (int) (lowerstats*100);
-                        int upperstatsshow = (int) (upperstats*100);
-                        int lowerstatsmaleshow = (int) (lowerstatsmale*100);
-                        int lowerstatsfemaleshow = (int) (lowerstatfesmale*100);
-                        int lowerstatsothershow = (int)(lowerstatsother*100);
-                        int upperstatsmaleshow = (int) (upperstatsmale*100);
-                        int upperstatsfemaleshow = (int) (upperstatfesmale*100);
-                        int upperstatsothershow = (int)(upperstatsother*100);
-                        String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")";
-                        String lowerString2 = Integer.toString(lowerstatsshow)+"%"+"\n";
-                        SpannableString ss1=  new SpannableString(lowerString2+lowerString1);
-                        ss1.setSpan(new RelativeSizeSpan(0.8f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
-                        //System.out.println("other0 "+other0i);
-                        //System.out.println("other1 "+other1i);
-                        String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")";
-                        String upperString2 =Integer.toString(upperstatsshow)+"%"+"\n";
-                        SpannableString ss2=  new SpannableString(upperString2+upperString1);
-                        ss2.setSpan(new RelativeSizeSpan(0.8f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
-                        lowerText.setText( ss1);
-                        //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
-                        //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
-                        upperText.setText(ss2);
-                        //System.out.println("other0 "+other0i);
-                        //System.out.println("other1 "+other1i);
-                        showstats=0;
-                    }
-                }
-            });
         }
     }// end async task
 
@@ -751,30 +472,439 @@ public class MainActivity extends AppCompatActivity {
         //System.out.println("other0"+ json17);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    public void playGame(){
+        SP = getSharedPreferences("questions", MODE_PRIVATE);
+        SharedPreferences SP3 = getSharedPreferences("gender",MODE_PRIVATE);
+        final String genderS = SP3.getString("gender","other");
+        Log.d("saved ", String.valueOf(SP.getAll()));
+        final SharedPreferences.Editor editor = SP2.edit();
+        Gson gson = new Gson();
+        String json = SP.getString("questions", null);
+        Type type = new TypeToken<ArrayList<String>>() {}.getType();
+        ArrayList<String>  set = gson.fromJson(json, type);
+        Gson gson2 = new Gson();
+        String json2 = SP.getString("category", null);
+        Type type2 = new TypeToken<ArrayList<String>>() {}.getType();
+        ArrayList<String>  set2 = gson2.fromJson(json2, type2);
+        Gson gson3 = new Gson();
+        String json3 = SP.getString("ids", null);
+        Type type3 = new TypeToken<ArrayList<String>>() {}.getType();
+        ArrayList<String>  set3 = gson3.fromJson(json3, type3);
+
+        final ArrayList<String> questions = new ArrayList<>(set);
+        ArrayList<String> categories = new ArrayList<>(set2);
+        ArrayList<String> ids = new ArrayList<>(set3);
+
+        final ImageView upperImage = findViewById(R.id.upperImage);
+        final ImageView lowerImage = findViewById(R.id.lowerImage);
+        final ImageView upperImage2 = findViewById(R.id.upperImage2);
+        final ImageView lowerImage2 = findViewById(R.id.lowerImage2);
+        final TextView upperText = findViewById(R.id.textViewUp);
+        final TextView lowerText = findViewById(R.id.textViewDown);
+
+        String[] qst = questions.get(globalI).split("@",2);
+        System.out.println(qst[0]);
+        System.out.println(qst[1]);
+        upperText.setText(qst[0]);
+        lowerText.setText(qst[1]);
+        //upperText.setShadowLayer(2, 2, 4, Color.BLACK);
+        //lowerText.setShadowLayer(10, 2, 4, Color.BLACK);
+        nextQuestion();
+
+        upperImage.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent2) {
+                float x2=0,y2=0;
+                if(motionEvent2.getAction() == MotionEvent.ACTION_DOWN){
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        public void run() {
+                            // UI code goes here
+                            upperImage.setVisibility(View.INVISIBLE);
+                            upperImage2.setVisibility(View.VISIBLE);
+                        }
+                    });
+                    //upperImage.setColorFilter(ctx.getResources().getColor(R.color.tint_blue),PorterDuff.Mode.MULTIPLY);
+                    xu=motionEvent2.getX();
+                    yu=motionEvent2.getY();
+                    return true;
+                }
+                else if(motionEvent2.getAction() == MotionEvent.ACTION_UP ){
+                    x2=motionEvent2.getX();
+                    y2=motionEvent2.getY();
+                    //Log.d("absx ",Float.toString(abs(x2-xu)));
+                    //Log.d("absy ",Float.toString(abs(y2-yu)));
+
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        public void run() {
+                            // UI code goes here
+                            upperImage2.setVisibility(View.INVISIBLE);
+                            upperImage.setVisibility(View.VISIBLE);
+                        }
+                    });
+                    //do something when let go
+                    if((abs(x2-xu))>200||(abs(y2-yu))>200){
+                        //upperImage.setColorFilter(null);
+                        return true;
+                    }else{
+                        upperImage.performClick();
+                        //upperImage.setColorFilter(null);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        lowerImage.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                float x2=0,y2=0;
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+                    //lowerImage.setImageResource(R.drawable.red_pressed);
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        public void run() {
+                            // UI code goes here
+                            lowerImage.setVisibility(View.INVISIBLE);
+                            lowerImage2.setVisibility(View.VISIBLE);
+                        }
+                    });
+
+                    //lowerImage.setColorFilter(ctx.getResources().getColor(R.color.tint_red),PorterDuff.Mode.MULTIPLY);
+                    x=motionEvent.getX();
+                    y=motionEvent.getY();
+                    return true;
+                }
+                else if(motionEvent.getAction() == MotionEvent.ACTION_UP ){
+                    x2=motionEvent.getX();
+                    y2=motionEvent.getY();
+                    //Log.d("absx ",Float.toString(abs(x2-x)));
+                    //Log.d("absy ",Float.toString(abs(y2-y)));
+                    //lowerImage.setImageResource(R.drawable.red_unpressed);
+
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        public void run() {
+                            // UI code goes here
+                            lowerImage.setVisibility(View.VISIBLE);
+                            lowerImage2.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                    //do something when let go
+                    if((abs(x2-x))>200||(abs(y2-y))>200){
+                        //lowerImage.setColorFilter(null);
+                        return true;
+                    }else{
+                        lowerImage.performClick();
+                        //lowerImage.setColorFilter(null);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        upperImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
+                ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
+                ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
+                ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
+                ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
+                ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
+                if(showstats==0) {
+                    //Log.d("click", "Up clicked");
+                    //send correct gender on stats submit
+                    if(genderS.equals("male")){
+                        submitStats ss = new submitStats(globalI - 1, 0, 1, 0, 0);
+                        ss.execute((Void) null);
+                    }else if(genderS.equals("female")){
+                        submitStats ss = new submitStats(globalI - 1, 0, 0, 1, 0);
+                        ss.execute((Void) null);
+                    }else{
+                        submitStats ss = new submitStats(globalI - 1, 0, 0, 0, 1);
+                        ss.execute((Void) null);
+                    }
+                    GetStats gs = new GetStats();
+                    gs.execute(new String[] {getStatsUrl});
+                    System.out.println(other0);
+
+                    if (globalI < questions.size() - 1) {
+                        String[] qst = questions.get(globalI).split("@", 2);
+                        upperText.setText(qst[0]);
+                        lowerText.setText(qst[1]);
+                        System.out.println(qst[0]);
+                        System.out.println(qst[1]);
+                        nextQuestion();
+                        editor.putInt("state", globalI);
+                        editor.apply();
+                        editor.commit();
+                    } else {
+                        Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
+                        globalI =0;
+                        SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
+                        SharedPreferences.Editor editor = SP2.edit();
+                        editor.putInt("state",0);
+                        editor.apply();
+                        editor.commit();
+                    }
+                    showstats=1;
+                }else{
+                    int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
+                    if(globalI>1){
+                        male0i =(male0.get(globalI-1));
+                        female0i=(female0.get(globalI-1));
+                        other0i = (other0.get(globalI-1));
+                        male1i=(male1.get(globalI-1));
+                        female1i=(female1.get(globalI-1));
+                        other1i=(other1.get(globalI-1));
+                    }else{
+                        male0i =(male0.get(globalI));
+                        female0i=(female0.get(globalI));
+                        other0i = (other0.get(globalI));
+                        male1i=(male1.get(globalI));
+                        female1i=(female1.get(globalI));
+                        other1i=(other1.get(globalI));
+                    }
+                    float lowerstatsmale = (float) (male1i)/(float) (male0i+male1i);
+                    float lowerstatfesmale = (float) (female1i)/(float) (female0i+female1i);
+                    float lowerstatsother = (float) (other1i)/(float) (other1i+other0i);
+                    float upperstatsmale = (float) (male0i)/(float) (male0i+male1i);
+                    float upperstatfesmale = (float) (female0i)/(float) (female0i+female1i);
+                    float upperstatsother = (float) (other0i)/(float) (other0i+other1i);
+                    float lowerstats =(float)(male1i+female1i+other1i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
+                    float upperstats =(float)(male0i+female0i+other0i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
+                    //System.out.println("lowerstats "+lowerstats);
+                    int lowerstatsshow = (int) (lowerstats*100);
+                    int upperstatsshow = (int) (upperstats*100);
+                    int lowerstatsmaleshow = (int) (lowerstatsmale*100);
+                    int lowerstatsfemaleshow = (int) (lowerstatfesmale*100);
+                    int lowerstatsothershow = (int)(lowerstatsother*100);
+                    int upperstatsmaleshow = (int) (upperstatsmale*100);
+                    int upperstatsfemaleshow = (int) (upperstatfesmale*100);
+                    int upperstatsothershow = (int)(upperstatsother*100);
+                    String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")";
+                    String lowerString2 = Integer.toString(lowerstatsshow)+"%"+"\n";
+                    SpannableString ss1=  new SpannableString(lowerString2+lowerString1);
+                    ss1.setSpan(new RelativeSizeSpan(0.8f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    //System.out.println("other0 "+other0i);
+                    //System.out.println("other1 "+other1i);
+                    String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")";
+                    String upperString2 =Integer.toString(upperstatsshow)+"%"+"\n";
+                    SpannableString ss2=  new SpannableString(upperString2+upperString1);
+                    ss2.setSpan(new RelativeSizeSpan(0.8f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    lowerText.setText( ss1);
+                    //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
+                    //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
+                    upperText.setText(ss2);
+                    showstats=0;
+                }
+            }
+        });
+
+        lowerImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
+                ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
+                ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
+                ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
+                ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
+                ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
+                if(showstats==0) {
+                    //Log.d("click", "Down clicked");
+                    if(genderS.equals("male")){
+                        submitStats ss = new submitStats(globalI - 1, 1, 1, 0, 0);
+                        ss.execute((Void) null);
+                    }else if(genderS.equals("female")){
+                        submitStats ss = new submitStats(globalI - 1, 1, 0, 1, 0);
+                        ss.execute((Void) null);
+                    }else{
+                        submitStats ss = new submitStats(globalI - 1, 0, 0, 0, 1);
+                        ss.execute((Void) null);
+                    }
+                    GetStats gs = new GetStats();
+                    gs.execute(new String[] {getStatsUrl});
+
+                    if (globalI < questions.size() - 1) {
+                        String[] qst = questions.get(globalI).split("@", 2);
+                        lowerText.setText(qst[1]);
+                        upperText.setText(qst[0]);
+                        System.out.println(qst[0]);
+                        System.out.println(qst[1]);
+                        nextQuestion();
+                        editor.putInt("state", globalI);
+                        editor.apply();
+                        editor.commit();
+                    } else {
+                        Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
+                        globalI =0;
+                        SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
+                        SharedPreferences.Editor editor = SP2.edit();
+                        editor.putInt("state",0);
+                        editor.apply();
+                        editor.commit();
+                    }
+                    showstats=1;
+                }else{
+                    int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
+                    if(globalI>1){
+                        male0i =(male0.get(globalI-1));
+                        female0i=(female0.get(globalI-1));
+                        other0i = (other0.get(globalI-1));
+                        male1i=(male1.get(globalI-1));
+                        female1i=(female1.get(globalI-1));
+                        other1i=(other1.get(globalI-1));
+                    }else{
+                        male0i =(male0.get(globalI));
+                        female0i=(female0.get(globalI));
+                        other0i = (other0.get(globalI));
+                        male1i=(male1.get(globalI));
+                        female1i=(female1.get(globalI));
+                        other1i=(other1.get(globalI));
+                    }
+                    float lowerstatsmale = (float) (male1i)/(float) (male0i+male1i);
+                    float lowerstatfesmale = (float) (female1i)/(float) (female0i+female1i);
+                    float lowerstatsother = (float) (other1i)/(float) (other1i+other0i);
+                    float upperstatsmale = (float) (male0i)/(float) (male0i+male1i);
+                    float upperstatfesmale = (float) (female0i)/(float) (female0i+female1i);
+                    float upperstatsother = (float) (other0i)/(float) (other0i+other1i);
+                    float lowerstats =(float)(male1i+female1i+other1i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
+                    float upperstats =(float)(male0i+female0i+other0i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
+                    //System.out.println("lowerstats "+lowerstats);
+                    int lowerstatsshow = (int) (lowerstats*100);
+                    int upperstatsshow = (int) (upperstats*100);
+                    int lowerstatsmaleshow = (int) (lowerstatsmale*100);
+                    int lowerstatsfemaleshow = (int) (lowerstatfesmale*100);
+                    int lowerstatsothershow = (int)(lowerstatsother*100);
+                    int upperstatsmaleshow = (int) (upperstatsmale*100);
+                    int upperstatsfemaleshow = (int) (upperstatfesmale*100);
+                    int upperstatsothershow = (int)(upperstatsother*100);
+                    String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")";
+                    String lowerString2 = Integer.toString(lowerstatsshow)+"%"+"\n";
+                    SpannableString ss1=  new SpannableString(lowerString2+lowerString1);
+                    ss1.setSpan(new RelativeSizeSpan(0.8f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    //System.out.println("other0 "+other0i);
+                    //System.out.println("other1 "+other1i);
+                    String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")";
+                    String upperString2 =Integer.toString(upperstatsshow)+"%"+"\n";
+                    SpannableString ss2=  new SpannableString(upperString2+upperString1);
+                    ss2.setSpan(new RelativeSizeSpan(0.8f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    lowerText.setText( ss1);
+                    //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
+                    //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
+                    upperText.setText(ss2);
+                    //System.out.println("other0 "+other0i);
+                    //System.out.println("other1 "+other1i);
+                    showstats=0;
+                }
+            }
+        });
+    }
+
+    private class GetComments extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            String id = params[1];
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(params[0]);
+            SP = getSharedPreferences("comments", MODE_PRIVATE);
+            System.out.println("comment id "+id);
+            try {
+                List<NameValuePair> sendparams = new ArrayList<>();
+                sendparams.add(new BasicNameValuePair("question",id));
+                UrlEncodedFormEntity ent = new UrlEncodedFormEntity(sendparams, HTTP.UTF_8);
+                httppost.setEntity(ent);
+                HttpResponse response = httpclient.execute(httppost);
+                HttpEntity entity = response.getEntity();
+                InputStream inputStream = entity.getContent();
+                // json is UTF-8 by default
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                StringBuilder sb = new StringBuilder();
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                jsonCommentResult = sb.toString();
+                System.out.println("json Comments "+jsonCommentResult);
+
+                //System.out.println(new String(jsonStatsResult.getBytes(), "UTF-8"));
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(ctx, "Connection Error", Toast.LENGTH_LONG).show());
+                return "error";
+            }
+            return id;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d("comments",jsonCommentResult);
+            System.out.println("comments "+jsonCommentResult);
+            Intent i = new Intent(MainActivity.this,Comments.class);
+            i.putExtra("comments",jsonCommentResult);
+            i.putExtra("question",Integer.valueOf(result));
+            startActivity(i);
+        }
+    }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu( Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        /*
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            public void run() {
+                // UI code goes here
+
+            }
+        });
+        */
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    public boolean onOptionsItemSelected( MenuItem item) {
+                // Handle action bar item clicks here. The action bar will
+                // automatically handle clicks on the Home/Up button, so long
+                // as you specify a parent activity in AndroidManifest.xml.
+                int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.reset) {
-            globalI =0;
-            SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
-            SharedPreferences.Editor editor = SP2.edit();
-            editor.putInt("state",0);
-            editor.apply();
-            editor.commit();
-        }
+                //noinspection SimplifiableIfStatement
+                if (id == R.id.reset) {
+                    globalI = 0;
+                    SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = SP2.edit();
+                    editor.putInt("state", 0);
+                    editor.apply();
+                    editor.commit();
+                } else if (id == R.id.submitQuestion) {
+                    Intent i = new Intent(MainActivity.this, SubmitQuestion.class);
+                    startActivity(i);
+                } else if (id == R.id.changeTextColor) {
+                    TextView upperText = findViewById(R.id.textViewUp);
+                    TextView lowerText = findViewById(R.id.textViewDown);
+                    if (upperText.getCurrentTextColor() == -16777216 || upperText.getCurrentTextColor() == -13355980) {
+                        upperText.setTextColor(Color.WHITE);
+                        lowerText.setTextColor(Color.WHITE);
+                    } else {
+                        upperText.setTextColor(Color.BLACK);
+                        lowerText.setTextColor(Color.BLACK);
+                    }
+                }
 
         return super.onOptionsItemSelected(item);
     }
@@ -833,6 +963,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+                resetGameState();
                 return "Failed";
             }
             if(response.contains("Success")){
@@ -877,16 +1008,20 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-                Toast.makeText(ctx, "Connection Error", Toast.LENGTH_LONG).show();
-                return null;
+                runOnUiThread(() -> Toast.makeText(ctx, "Connection Error", Toast.LENGTH_LONG).show());
+                resetGameState();
+                return "error";
             }
-            return null;
+            return "success";
         }
 
         @Override
         protected void onPostExecute(String result) {
-            makeStatsLists();
+            if(result.equals("success")) {
+                makeStatsLists();
+            }
         }
+
     }
 
 
