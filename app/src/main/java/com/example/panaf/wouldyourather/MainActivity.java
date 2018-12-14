@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,16 +27,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,9 +43,7 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.Math.abs;
 
@@ -84,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
         globalI=SP2.getInt("state",0);
         showstats=1;
-        playGame();
+
         final ImageView or = findViewById(R.id.or);
         or.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
@@ -119,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
 
     void resetGameState (){
@@ -158,8 +150,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
 
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(params[0]);
             SP = getSharedPreferences("questions", MODE_PRIVATE);
 
             String id;
@@ -182,16 +172,34 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                List<NameValuePair> sendparams = new ArrayList<>();
-                Log.d("id sent",id);
-                sendparams.add(new BasicNameValuePair("id", id));
-                UrlEncodedFormEntity ent = new UrlEncodedFormEntity(sendparams, HTTP.UTF_8);
-                httppost.setEntity(ent);
-                HttpResponse response = httpclient.execute(httppost);
-                HttpEntity entity = response.getEntity();
-                InputStream inputStream = entity.getContent();
+                URL url = new URL(params[0]);
+                //String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("id", id);
+                String query = builder.build().getEncodedQuery();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+
+                InputStream IS = conn.getInputStream();
                 // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"), 8);
                 StringBuilder sb = new StringBuilder();
                 String line = null;
                 while ((line = reader.readLine()) != null)
@@ -201,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
                 jsonResult = sb.toString();
                 Log.d("result",jsonResult);
                 System.out.println(new String(jsonResult.getBytes(),"UTF-8"));
+                conn.disconnect();
             }
             catch (ClientProtocolException e) {
                 e.printStackTrace();
@@ -217,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             makeLists();
+            playGame();
 
         }
     }// end async task
@@ -816,20 +826,46 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             String id = params[1];
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(params[0]);
             SP = getSharedPreferences("comments", MODE_PRIVATE);
             System.out.println("comment id "+id);
             try {
+
+                URL url = new URL(params[0]);
+                //String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("question", id);
+
+                String query = builder.build().getEncodedQuery();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+                /*
                 List<NameValuePair> sendparams = new ArrayList<>();
                 sendparams.add(new BasicNameValuePair("question",id));
                 UrlEncodedFormEntity ent = new UrlEncodedFormEntity(sendparams, HTTP.UTF_8);
                 httppost.setEntity(ent);
                 HttpResponse response = httpclient.execute(httppost);
                 HttpEntity entity = response.getEntity();
-                InputStream inputStream = entity.getContent();
+                */
+                InputStream IS = conn.getInputStream();
                 // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"), 8);
                 StringBuilder sb = new StringBuilder();
                 String line = null;
                 while ((line = reader.readLine()) != null) {
@@ -837,7 +873,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 jsonCommentResult = sb.toString();
                 System.out.println("json Comments "+jsonCommentResult);
-
+                conn.disconnect();
                 //System.out.println(new String(jsonStatsResult.getBytes(), "UTF-8"));
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
@@ -851,12 +887,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            Log.d("comments",jsonCommentResult);
-            System.out.println("comments "+jsonCommentResult);
-            Intent i = new Intent(MainActivity.this,Comments.class);
-            i.putExtra("comments",jsonCommentResult);
-            i.putExtra("question",Integer.valueOf(result));
-            startActivity(i);
+            if(!(result.equals("error"))){
+                Log.d("comments",jsonCommentResult);
+                System.out.println("comments "+jsonCommentResult);
+                Intent i = new Intent(MainActivity.this,Comments.class);
+                i.putExtra("comments",jsonCommentResult);
+                i.putExtra("question",Integer.valueOf(result));
+                startActivity(i);
+            }
+
         }
     }
 
@@ -904,6 +943,14 @@ public class MainActivity extends AppCompatActivity {
                         upperText.setTextColor(Color.BLACK);
                         lowerText.setTextColor(Color.BLACK);
                     }
+                }else if (id==R.id.logout){
+                    SharedPreferences SP =getSharedPreferences("user",MODE_PRIVATE);
+                    SharedPreferences.Editor SPE = SP.edit();
+                    SPE.clear();
+                    SPE.apply();
+                    Intent i = new Intent(MainActivity.this,LoginActivity.class);
+                    startActivity(i);
+                    finish();
                 }
 
         return super.onOptionsItemSelected(item);
@@ -931,7 +978,37 @@ public class MainActivity extends AppCompatActivity {
             String reg_url = "http://83.212.84.230/sendstats.php";
             String response = null;
             try {
+
                 URL url = new URL(reg_url);
+                //String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("id", String.valueOf(mid))
+                        .appendQueryParameter("choice", String.valueOf(mchoice))
+                        .appendQueryParameter("male", String.valueOf(mmale))
+                        .appendQueryParameter("female", String.valueOf(mfemale))
+                        .appendQueryParameter("other", String.valueOf(mother));
+                String query = builder.build().getEncodedQuery();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+                int responseCode=conn.getResponseCode();
+
+                /*
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                 httpURLConnection.setRequestMethod("POST");
                 httpURLConnection.setDoOutput(true);
@@ -939,12 +1016,12 @@ public class MainActivity extends AppCompatActivity {
                 //httpURLConnection.setDoInput(true);
                 OutputStream OS = httpURLConnection.getOutputStream();
                 BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(OS, "UTF-8"));
-                String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
                 bufferedWriter.write(data);
                 bufferedWriter.flush();
                 bufferedWriter.close();
                 OS.close();
-                InputStream IS = httpURLConnection.getInputStream();
+                */
+                InputStream IS = conn.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(IS));
                 StringBuilder result = new StringBuilder();
                 String line;
@@ -954,11 +1031,12 @@ public class MainActivity extends AppCompatActivity {
                 // Pass data to onPostExecute method
                 String r =(result.toString());
                 IS.close();
+
                 //Log.d("ResponseStats", httpURLConnection.getResponseMessage());
                 Log.d("ResponseStats", r);
                 response=r;
-                //httpURLConnection.connect();
-                httpURLConnection.disconnect();
+                conn.disconnect();
+
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -984,24 +1062,46 @@ public class MainActivity extends AppCompatActivity {
     private class GetStats extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(params[0]);
+
             SP = getSharedPreferences("questions", MODE_PRIVATE);
+
             try {
+                URL url = new URL(params[0]);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                //writer.write(query);
+
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+                /*
                 List<NameValuePair> sendparams = new ArrayList<>();
                 UrlEncodedFormEntity ent = new UrlEncodedFormEntity(sendparams, HTTP.UTF_8);
                 httppost.setEntity(ent);
                 HttpResponse response = httpclient.execute(httppost);
                 HttpEntity entity = response.getEntity();
-                InputStream inputStream = entity.getContent();
+                */
+                InputStream IS = conn.getInputStream();
                 // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"), 8);
                 StringBuilder sb = new StringBuilder();
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     sb.append(line + "\n");
                 }
                 jsonStatsResult = sb.toString();
+                conn.disconnect();
                 //Log.d("result", jsonStatsResult);
                 //System.out.println(new String(jsonStatsResult.getBytes(), "UTF-8"));
             } catch (ClientProtocolException e) {

@@ -1,6 +1,7 @@
 package com.example.panaf.wouldyourather;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,7 +21,6 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 
 public class SubmitQuestion extends AppCompatActivity {
     Context ctx = this;
@@ -56,18 +56,27 @@ public class SubmitQuestion extends AppCompatActivity {
             String reg_url = "http://83.212.84.230/submitquestion.php";
             try {
                 URL url = new URL(reg_url);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoOutput(true);
-                //httpURLConnection.setDoInput(true);
-                OutputStream OS = httpURLConnection.getOutputStream();
-                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(OS, "UTF-8"));
-                String data = URLEncoder.encode("question", "UTF-8") + "=" + URLEncoder.encode(mquestion, "UTF-8");
-                bufferedWriter.write(data);
-                bufferedWriter.flush();
-                bufferedWriter.close();
-                OS.close();
-                InputStream IS = httpURLConnection.getInputStream();
+
+
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("question", mquestion);
+                String query = builder.build().getEncodedQuery();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+                InputStream IS = conn.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(IS));
                 StringBuilder result = new StringBuilder();
                 String line;
@@ -78,10 +87,10 @@ public class SubmitQuestion extends AppCompatActivity {
                 String r = (result.toString());
                 IS.close();
                 result1=r;
-                Log.d("Response", httpURLConnection.getResponseMessage());
+
                 Log.d("Response", r);
                 //httpURLConnection.connect();
-                httpURLConnection.disconnect();
+                conn.disconnect();
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();

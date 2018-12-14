@@ -2,6 +2,7 @@ package com.example.panaf.wouldyourather;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
@@ -115,11 +116,33 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 finish();
                 Intent i = new Intent(LoginActivity.this,SelectGender.class);
                 startActivity(i);
+
+                try {
+                    @SuppressLint("NewApi") GenerateRandomName gn = new GenerateRandomName(ctx);
+                    System.out.println("final "+gn.getName());
+                    SharedPreferences SP = getSharedPreferences("user",MODE_PRIVATE);
+                    SharedPreferences.Editor SPE = SP.edit();
+                    SPE.putString("username",gn.getName());
+                    SPE.apply();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+
+
             }
         });
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+        SharedPreferences SP = getSharedPreferences("user",MODE_PRIVATE);
+        if(SP.contains("username")&&(!(SP.getString("username",null).equals(null)))){
+            Intent i = new Intent(LoginActivity.this,MainActivity.class);
+            finish();
+            startActivity(i);
+        }
+
     }
 
     /**
@@ -137,7 +160,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = usernameView.getText().toString();
+        String username = usernameView.getText().toString();
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
@@ -152,7 +175,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(username, password);
             mAuthTask.execute((Void) null);
         }
     }
@@ -256,11 +279,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     public class UserLoginTask extends AsyncTask<Void, Void, String> {
 
-        private final String username;
+        private final String musername;
         private final String mPassword;
 
-        UserLoginTask(String email, String password) {
-            username = email;
+        UserLoginTask(String username, String password) {
+            musername = username;
             mPassword = password;
         }
 
@@ -270,20 +293,34 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             String reg_url = "http://83.212.84.230/login.php";
             String response = null;
             try {
-                URL url = new URL(reg_url);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoOutput(true);
 
-                //httpURLConnection.setDoInput(true);
-                OutputStream OS = httpURLConnection.getOutputStream();
-                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(OS, "UTF-8"));
-                String data = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8") +"&"+URLEncoder.encode("password", "UTF-8")+ "=" + URLEncoder.encode(mPassword, "UTF-8");
-                bufferedWriter.write(data);
-                bufferedWriter.flush();
-                bufferedWriter.close();
-                OS.close();
-                InputStream IS = httpURLConnection.getInputStream();
+                URL url = new URL(reg_url);
+                //String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", musername)
+                        .appendQueryParameter("password", mPassword);
+                String query = builder.build().getEncodedQuery();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+
+                InputStream IS = conn.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(IS));
                 StringBuilder result = new StringBuilder();
                 String line;
@@ -296,12 +333,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 String r =(result.toString());
                 IS.close();
 
-                Log.d("Response", httpURLConnection.getResponseMessage());
+
                 Log.d("Response", r);
                 response=r;
                 resp = r;
-                //httpURLConnection.connect();
-                httpURLConnection.disconnect();
+                conn.disconnect();
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -322,10 +358,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask = null;
             showProgress(false);
             SharedPreferences SP = getSharedPreferences("gender",MODE_PRIVATE);
+            SharedPreferences SP2 = getSharedPreferences("user",MODE_PRIVATE);
             SharedPreferences.Editor SPE = SP.edit();
+            SharedPreferences.Editor SPE2 = SP2.edit();
+
 
             if (success.equals("Success")) {
-                finish();
+
+                SPE2.putString("username",musername);
+                SPE2.apply();
 
                 if(resp.contains("Male")){
                     SPE.putString("gender","male");
@@ -346,6 +387,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                 Intent i = new Intent(LoginActivity.this,MainActivity.class);
                 startActivity(i);
+                finish();
 
             } else if(success.equals("Invalid")){
                 mPasswordView.setError(getString(R.string.error_incorrect_username_or_password));

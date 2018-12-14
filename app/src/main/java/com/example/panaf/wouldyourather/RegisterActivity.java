@@ -3,22 +3,20 @@ package com.example.panaf.wouldyourather;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
-
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -44,7 +42,6 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -376,19 +373,31 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
             try {
                 URL url = new URL(reg_url);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoOutput(true);
 
-                //httpURLConnection.setDoInput(true);
-                OutputStream OS = httpURLConnection.getOutputStream();
-                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(OS, "UTF-8"));
-                String data =URLEncoder.encode("email", "UTF-8") + "=" + URLEncoder.encode(mEmail, "UTF-8")+"&"+ URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(mUsername, "UTF-8") + "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(mPassword, "UTF-8")+ "&" + URLEncoder.encode("gender", "UTF-8") + "=" + URLEncoder.encode(mGender, "UTF-8");
-                bufferedWriter.write(data);
-                bufferedWriter.flush();
-                bufferedWriter.close();
-                OS.close();
-                InputStream IS = httpURLConnection.getInputStream();
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("email", mEmail)
+                        .appendQueryParameter("username", mUsername)
+                        .appendQueryParameter("password", mPassword)
+                        .appendQueryParameter("gender", mGender);
+
+                String query = builder.build().getEncodedQuery();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+                InputStream IS = conn.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(IS));
                 StringBuilder result = new StringBuilder();
                 String line;
@@ -401,11 +410,11 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
                 String r = (result.toString());
                 IS.close();
 
-                Log.d("Response", httpURLConnection.getResponseMessage());
+
                 Log.d("Response", r);
                 response = r;
                 //httpURLConnection.connect();
-                httpURLConnection.disconnect();
+                conn.disconnect();
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();

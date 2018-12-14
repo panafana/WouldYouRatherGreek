@@ -1,36 +1,34 @@
 package com.example.panaf.wouldyourather;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Comments extends AppCompatActivity {
     private String submitCommentUrl ="http://83.212.84.230/submitcomment.php";
@@ -39,6 +37,7 @@ public class Comments extends AppCompatActivity {
     MyListAdapter adapter;
     ListView listView;
     Context ctx;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,29 +103,58 @@ public class Comments extends AppCompatActivity {
         //listView.setAdapter(itemsAdapter);
         listView.setAdapter(adapter);
 
-
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if ((keyCode == KeyEvent.KEYCODE_BACK))
+        {
+            finish();
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
 
 
     private class SubmitComment extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(params[0]);
             String comment = params[1];
             String question = params[2];
+            String user;
+            SharedPreferences SP =getSharedPreferences("user",MODE_PRIVATE);
+            if(SP.contains("username")){
+                user = SP.getString("username","noone");
+            }else{
+                user= "test";
+            }
             try {
-                List<NameValuePair> sendparams = new ArrayList<>();
-                sendparams.add(new BasicNameValuePair("comment",comment));
-                sendparams.add(new BasicNameValuePair("question",question));
-                sendparams.add(new BasicNameValuePair("user","test"));
-                UrlEncodedFormEntity ent = new UrlEncodedFormEntity(sendparams, HTTP.UTF_8);
-                httppost.setEntity(ent);
-                HttpResponse response = httpclient.execute(httppost);
-                HttpEntity entity = response.getEntity();
-                InputStream inputStream = entity.getContent();
+                URL url = new URL(params[0]);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("comment", comment)
+                        .appendQueryParameter("question", question)
+                        .appendQueryParameter("user", user);
+                String query = builder.build().getEncodedQuery();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+                InputStream IS = conn.getInputStream();
                 // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"), 8);
                 StringBuilder sb = new StringBuilder();
                 String line = null;
                 while ((line = reader.readLine()) != null) {
@@ -134,6 +162,7 @@ public class Comments extends AppCompatActivity {
                 }
                 jsonSubmitedCommentResult = sb.toString();
                 Log.d("result", jsonSubmitedCommentResult);
+                conn.disconnect();
                 //System.out.println(new String(jsonStatsResult.getBytes(), "UTF-8"));
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
@@ -156,25 +185,41 @@ public class Comments extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
 
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(params[0]);
             String question = params[1];
             try {
-                List<NameValuePair> sendparams = new ArrayList<>();
-                sendparams.add(new BasicNameValuePair("question", question));
-                UrlEncodedFormEntity ent = new UrlEncodedFormEntity(sendparams, HTTP.UTF_8);
-                httppost.setEntity(ent);
-                HttpResponse response = httpclient.execute(httppost);
-                HttpEntity entity = response.getEntity();
-                InputStream inputStream = entity.getContent();
+                URL url = new URL(params[0]);
+                //String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("question", question);
+                String query = builder.build().getEncodedQuery();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+                InputStream IS = conn.getInputStream();
                 // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"), 8);
                 StringBuilder sb = new StringBuilder();
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     sb.append(line + "\n");
                 }
                 jsonCommentResult = sb.toString();
+                conn.disconnect();
                 //Log.d("result", jsonStatsResult);
                 //System.out.println(new String(jsonStatsResult.getBytes(), "UTF-8"));
             } catch (ClientProtocolException e) {
