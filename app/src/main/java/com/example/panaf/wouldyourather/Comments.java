@@ -28,7 +28,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Comments extends AppCompatActivity {
     private String submitCommentUrl ="http://83.212.84.230/submitcomment.php";
@@ -76,9 +79,17 @@ public class Comments extends AppCompatActivity {
                 String tempc = jsonChildNode.optString("comment");
                 String tempu = jsonChildNode.optString("user");
                 String tempd = jsonChildNode.optString("date");
+
+                // This could be MM/dd/yyyy, you original value is ambiguous
+                SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date dateValue = input.parse(tempd);
+                SimpleDateFormat output = new SimpleDateFormat("HH:mm dd/MM/yyyy ");
+                //System.out.println("" + output.format(dateValue) + " real date " + tempd);
+
+                //System.out.println(tempd);
                 comments.add(tempc);
                 users.add(tempu);
-                dates.add(tempd);
+                dates.add(output.format(dateValue));
             }
         }catch (JSONException e) {
             Toast.makeText(getApplicationContext(), "Error JSON Parser" + e.toString(),
@@ -86,6 +97,8 @@ public class Comments extends AppCompatActivity {
             Log.d("error ",e.toString());
         } catch (NullPointerException e) {
             Toast.makeText(this, "No internet", Toast.LENGTH_LONG).show();
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
         String[] commentsStr = new String[comments.size()];

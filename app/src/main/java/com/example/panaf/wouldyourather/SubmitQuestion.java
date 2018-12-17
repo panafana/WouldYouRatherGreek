@@ -30,12 +30,14 @@ public class SubmitQuestion extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submit_question);
         final EditText qst = findViewById(R.id.question);
+        final EditText qst2 = findViewById(R.id.question2);
         Button submit = findViewById(R.id.submit);
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!(qst.getText().toString().equals(""))){
-                    SendQuestion s = new SendQuestion(qst.getText().toString());
+                if(!(qst.getText().toString().equals(""))&&!(qst2.getText().toString().equals(""))){
+                    String finalqst = qst.getText().toString() +" @ "+ qst2.getText().toString();
+                    SendQuestion s = new SendQuestion(finalqst);
                     s.execute();
                 }
             }
