@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.83" />
+        app:layout_constraintGuide_end="68dp" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline14"
@@ -25,14 +25,16 @@
         android:id="@+id/comment"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:ems="10"
-        android:hint="Εισαγωγή σχολίου"
+        android:hint="@string/insert_comment"
         android:inputType="textAutoCorrect|textAutoComplete|textMultiLine"
         android:isScrollContainer="true"
         android:singleLine="false"
         android:text=""
-        app:layout_constraintBottom_toTopOf="@+id/guideline15"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline17"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline13" />
@@ -42,11 +44,12 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="Υποβολή"
-        android:textAllCaps="false"
+        android:text="@string/submit"
 
-        app:layout_constraintBottom_toTopOf="@+id/guideline15"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline17"
         app:layout_constraintTop_toTopOf="@+id/guideline13"
@@ -57,7 +60,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.99" />
+        app:layout_constraintGuide_percent="1.0" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline17"

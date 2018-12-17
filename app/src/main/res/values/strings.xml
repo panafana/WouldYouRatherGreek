@@ -2,23 +2,32 @@
     <string name="app_name">Θα προτιμούσες</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
-    <string name="prompt_username">Username</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in</string>
-    <string name="action_register">Register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="error_incorrect_username_or_password">Incorrect username or password</string>
-    <string name="general_error">Something went wrong</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
+    <string name="prompt_username">Ονομα χρήστη</string>
+    <string name="prompt_password">Κωδικός</string>
+    <string name="action_sign_in">Σύνδεση</string>
+    <string name="action_register">Εγγραφή</string>
+    <string name="action_sign_in_short">Σύνδεση</string>
+    <string name="error_invalid_email">Η διεύθυνση email δεν είναι έγγυρη</string>
+    <string name="error_invalid_password">Ο κωδικός είναι πολύ μικρός</string>
+    <string name="error_incorrect_password">Λάθος κωδικός</string>
+    <string name="error_field_required">Αυτό το πεδίο είναι υποχρεωτικό</string>
+    <string name="error_incorrect_username_or_password">Λάθος όνομα χρήστη ή κωδικός</string>
+    <string name="general_error">Κάτι πήγε στραβά</string>
+    <string name="permission_rationale">"Η άδεια επαφών χρησιμοποιείται στην αυτόματη συμπλήρωση email."
     </string>
-    <string name="title_activity_register">Register</string>
-    <string name="action_offline">Συνεχεια εκτος συνδεσης</string>
+    <string name="title_activity_register">Εγγραφή</string>
+    <string name="action_offline">Συνεχεια χωρίς εγγραφή</string>
     <string name="action_bar">Θα προτιμούσες...</string>
+    <string name="choice">Επιλογή 1</string>
+    <string name="choice2">Επιλογή 2</string>
+    <string name="submit">Υποβολή</string>
+    <string name="or">ή</string>
+    <string name="gender_choice">Επιλέξτε φύλο</string>
+    <string name="gender_male">Άνδρας</string>
+    <string name="gender_female">Γυναίκα</string>
+    <string name="gender_other">Άλλο</string>
+    <string name="insert_comment">Εισαγωγή σχολίου</string>
+
     <string-array name="genders">
         <item>Male</item>
         <item>Female</item>
