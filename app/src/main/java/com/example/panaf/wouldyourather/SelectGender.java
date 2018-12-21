@@ -1,5 +1,7 @@
 package com.example.panaf.wouldyourather;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -7,8 +9,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
-public class SelectGender extends AppCompatActivity {
+import java.io.IOException;
 
+public class SelectGender extends AppCompatActivity {
+    Context ctx=this;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +32,16 @@ public class SelectGender extends AppCompatActivity {
                 SPE.putString("gender","male");
                 SPE.apply();
                 SPE.commit();
+                try {
+                    @SuppressLint({"NewApi", "LocalSuppress"}) GenerateRandomName gn = new GenerateRandomName(ctx,0);
+                    System.out.println("final "+gn.getName());
+                    SharedPreferences SP2 = getSharedPreferences("user",MODE_PRIVATE);
+                    SharedPreferences.Editor SPE2 = SP2.edit();
+                    SPE2.putString("username",gn.getName());
+                    SPE2.apply();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 startActivity(i);
                 finish();
             }
@@ -41,6 +55,16 @@ public class SelectGender extends AppCompatActivity {
                 SPE.putString("gender","female");
                 SPE.apply();
                 SPE.commit();
+                try {
+                    @SuppressLint({"NewApi", "LocalSuppress"}) GenerateRandomName gn = new GenerateRandomName(ctx,1);
+                    System.out.println("final "+gn.getName());
+                    SharedPreferences SP2 = getSharedPreferences("user",MODE_PRIVATE);
+                    SharedPreferences.Editor SPE2 = SP2.edit();
+                    SPE2.putString("username",gn.getName());
+                    SPE2.apply();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 startActivity(i);
                 finish();
             }
@@ -54,6 +78,16 @@ public class SelectGender extends AppCompatActivity {
                 SPE.putString("gender","other");
                 SPE.apply();
                 SPE.commit();
+                try {
+                    @SuppressLint({"NewApi", "LocalSuppress"}) GenerateRandomName gn = new GenerateRandomName(ctx,2);
+                    System.out.println("final "+gn.getName());
+                    SharedPreferences SP2 = getSharedPreferences("user",MODE_PRIVATE);
+                    SharedPreferences.Editor SPE2 = SP2.edit();
+                    SPE2.putString("username",gn.getName());
+                    SPE2.apply();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 startActivity(i);
                 finish();
             }

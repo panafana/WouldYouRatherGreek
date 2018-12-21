@@ -2,7 +2,6 @@ package com.example.panaf.wouldyourather;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
@@ -39,7 +38,6 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,16 +115,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 Intent i = new Intent(LoginActivity.this,SelectGender.class);
                 startActivity(i);
 
-                try {
-                    @SuppressLint("NewApi") GenerateRandomName gn = new GenerateRandomName(ctx);
-                    System.out.println("final "+gn.getName());
-                    SharedPreferences SP = getSharedPreferences("user",MODE_PRIVATE);
-                    SharedPreferences.Editor SPE = SP.edit();
-                    SPE.putString("username",gn.getName());
-                    SPE.apply();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+
 
 
 
