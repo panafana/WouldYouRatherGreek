@@ -7,17 +7,17 @@
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name">
@@ -36,8 +36,9 @@
             android:label="@string/title_activity_register" />
         <activity android:name=".SelectGender" />
         <activity android:name=".SubmitQuestion" />
-        <activity android:name=".Comments" android:windowSoftInputMode="adjustResize">
-        </activity>
+        <activity
+            android:name=".Comments"
+            android:windowSoftInputMode="adjustResize"></activity>
     </application>
 
 </manifest>
