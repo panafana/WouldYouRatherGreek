@@ -11,12 +11,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,6 +24,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -45,7 +47,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import static java.lang.Math.abs;
+import static java.lang.Math.round;
 
 public class MainActivity extends AppCompatActivity {
     SharedPreferences SP;
@@ -59,8 +68,13 @@ public class MainActivity extends AppCompatActivity {
     private String getStatsUrl ="http://83.212.84.230/getstats.php";
     private String commentsUrl ="http://83.212.84.230/getcomments.php";
     int globalI =0;
-    int showstats;
+    int showstats,buttonPressed=0;
     float x=0,y=0,xu=0,yu=0;
+    String currentQstUp,currentQstDown;
+    private NavigationView navigationView;
+    private DrawerLayout drawer;
+    private FloatingActionButton fab;
+    private DrawerLayout mDrawerLayout;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -68,12 +82,75 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        setSupportActionBar(toolbar);
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+
         accessWebService();
         GetStats g = new GetStats();
         g.execute(new String[] {getStatsUrl});
         SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
         globalI=SP2.getInt("state",0);
         showstats=1;
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        // set item as selected to persist highlight
+                        menuItem.setChecked(true);
+                        // close drawer when item is tapped
+                        int id = menuItem.getItemId();
+                        mDrawerLayout.closeDrawers();
+                        //noinspection SimplifiableIfStatement
+                        if (id == R.id.reset) {
+                            globalI = 0;
+                            SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = SP2.edit();
+                            editor.putInt("state", 0);
+                            editor.apply();
+                            editor.commit();
+                        } else if (id == R.id.submitQuestion) {
+                            Intent i = new Intent(MainActivity.this, SubmitQuestion.class);
+                            startActivity(i);
+                        } else if (id == R.id.changeTextColor) {
+                            TextView upperText = findViewById(R.id.textViewUp);
+                            TextView lowerText = findViewById(R.id.textViewDown);
+                            if (upperText.getCurrentTextColor() == -16777216 || upperText.getCurrentTextColor() == -13355980) {
+                                upperText.setTextColor(Color.WHITE);
+                                lowerText.setTextColor(Color.WHITE);
+                            } else {
+                                upperText.setTextColor(Color.BLACK);
+                                lowerText.setTextColor(Color.BLACK);
+                            }
+                        }else if (id==R.id.logout){
+                            SharedPreferences SP =getSharedPreferences("user",MODE_PRIVATE);
+                            SharedPreferences.Editor SPE = SP.edit();
+                            SPE.clear();
+                            SPE.apply();
+                            Intent i = new Intent(MainActivity.this,LoginActivity.class);
+                            startActivity(i);
+                            finish();
+                        }
+
+                        // Add code here to update the UI based on the item selected
+                        // For example, swap UI fragments here
+
+                        return true;
+                    }
+                });
+        View header =navigationView.getHeaderView(0);
+        TextView nav_header = header.findViewById(R.id.nav_header_textView);
+        SharedPreferences SP3 = getSharedPreferences("user",MODE_PRIVATE);
+        String username = SP3.getString("username","empty");
+        nav_header.setText(username);
 
         final ImageView or = findViewById(R.id.or);
         or.setOnTouchListener(new View.OnTouchListener() {
@@ -112,6 +189,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
 
     void resetGameState (){
         globalI = 0;
@@ -518,6 +597,8 @@ public class MainActivity extends AppCompatActivity {
         System.out.println(qst[1]);
         upperText.setText(qst[0]);
         lowerText.setText(qst[1]);
+        currentQstUp=qst[0];
+        currentQstDown=qst[1];
         //upperText.setShadowLayer(2, 2, 4, Color.BLACK);
         //lowerText.setShadowLayer(10, 2, 4, Color.BLACK);
         nextQuestion();
@@ -563,6 +644,7 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     }else{
                         upperImage.performClick();
+
                         //upperImage.setColorFilter(null);
                     }
                     return true;
@@ -614,6 +696,7 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     }else{
                         lowerImage.performClick();
+
                         //lowerImage.setColorFilter(null);
                     }
                     return true;
@@ -631,6 +714,7 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
                 ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
                 ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
+                buttonPressed=0;
                 if(showstats==0) {
                     //Log.d("click", "Up clicked");
                     //send correct gender on stats submit
@@ -646,12 +730,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                     GetStats gs = new GetStats();
                     gs.execute(new String[] {getStatsUrl});
-                    System.out.println(other0);
+                    //System.out.println(other0);
 
                     if (globalI < questions.size() - 1) {
                         String[] qst = questions.get(globalI).split("@", 2);
                         upperText.setText(qst[0]);
                         lowerText.setText(qst[1]);
+                        currentQstUp=qst[0];
+                        currentQstDown=qst[1];
                         System.out.println(qst[0]);
                         System.out.println(qst[1]);
                         nextQuestion();
@@ -693,29 +779,42 @@ public class MainActivity extends AppCompatActivity {
                     float upperstatsother = (float) (other0i)/(float) (other0i+other1i);
                     float lowerstats =(float)(male1i+female1i+other1i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
                     float upperstats =(float)(male0i+female0i+other0i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
-                    //System.out.println("lowerstats "+lowerstats);
-                    int lowerstatsshow = (int) (lowerstats*100);
-                    int upperstatsshow = (int) (upperstats*100);
-                    int lowerstatsmaleshow = (int) (lowerstatsmale*100);
-                    int lowerstatsfemaleshow = (int) (lowerstatfesmale*100);
-                    int lowerstatsothershow = (int)(lowerstatsother*100);
-                    int upperstatsmaleshow = (int) (upperstatsmale*100);
-                    int upperstatsfemaleshow = (int) (upperstatfesmale*100);
-                    int upperstatsothershow = (int)(upperstatsother*100);
+
+                    int lowerstatsshow =  round(lowerstats*100);
+                    int upperstatsshow =  round(upperstats*100);
+                    int lowerstatsmaleshow =  round(lowerstatsmale*100);
+                    int lowerstatsfemaleshow = round(lowerstatfesmale*100);
+                    int lowerstatsothershow = round(lowerstatsother*100);
+                    int upperstatsmaleshow = round(upperstatsmale*100);
+                    int upperstatsfemaleshow = round(upperstatfesmale*100);
+                    int upperstatsothershow = round(upperstatsother*100);
+
                     String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")";
                     String lowerString2 = Integer.toString(lowerstatsshow)+"%"+"\n";
                     SpannableString ss1=  new SpannableString(lowerString2+lowerString1);
-                    ss1.setSpan(new RelativeSizeSpan(0.8f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    ss1.setSpan(new RelativeSizeSpan(0.6f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    SpannableString ss1qst = new SpannableString((currentQstDown+"\n"));
+                    ss1qst.setSpan(new RelativeSizeSpan(0.8f),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
                     //System.out.println("other0 "+other0i);
                     //System.out.println("other1 "+other1i);
                     String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")";
                     String upperString2 =Integer.toString(upperstatsshow)+"%"+"\n";
                     SpannableString ss2=  new SpannableString(upperString2+upperString1);
-                    ss2.setSpan(new RelativeSizeSpan(0.8f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
-                    lowerText.setText( ss1);
+                    ss2.setSpan(new RelativeSizeSpan(0.6f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    SpannableString ss2qst = new SpannableString((currentQstUp+"\n"));
+                    ss2qst.setSpan(new RelativeSizeSpan(0.8f),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    if(buttonPressed==0){
+                        ss2qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }else{
+                        ss1qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+
+
+                    lowerText.setText( TextUtils.concat(ss1qst, ss1));
                     //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
                     //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
-                    upperText.setText(ss2);
+                    upperText.setText(TextUtils.concat(ss2qst, ss2));
                     showstats=0;
                 }
             }
@@ -730,6 +829,7 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
                 ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
                 ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
+                buttonPressed=1;
                 if(showstats==0) {
                     //Log.d("click", "Down clicked");
                     if(genderS.equals("male")){
@@ -749,6 +849,8 @@ public class MainActivity extends AppCompatActivity {
                         String[] qst = questions.get(globalI).split("@", 2);
                         lowerText.setText(qst[1]);
                         upperText.setText(qst[0]);
+                        currentQstUp=qst[0];
+                        currentQstDown=qst[1];
                         System.out.println(qst[0]);
                         System.out.println(qst[1]);
                         nextQuestion();
@@ -791,28 +893,38 @@ public class MainActivity extends AppCompatActivity {
                     float lowerstats =(float)(male1i+female1i+other1i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
                     float upperstats =(float)(male0i+female0i+other0i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
                     //System.out.println("lowerstats "+lowerstats);
-                    int lowerstatsshow = (int) (lowerstats*100);
-                    int upperstatsshow = (int) (upperstats*100);
-                    int lowerstatsmaleshow = (int) (lowerstatsmale*100);
-                    int lowerstatsfemaleshow = (int) (lowerstatfesmale*100);
-                    int lowerstatsothershow = (int)(lowerstatsother*100);
-                    int upperstatsmaleshow = (int) (upperstatsmale*100);
-                    int upperstatsfemaleshow = (int) (upperstatfesmale*100);
-                    int upperstatsothershow = (int)(upperstatsother*100);
+                    int lowerstatsshow = round(lowerstats*100);
+                    int upperstatsshow = round(upperstats*100);
+                    int lowerstatsmaleshow = round(lowerstatsmale*100);
+                    int lowerstatsfemaleshow = round(lowerstatfesmale*100);
+                    int lowerstatsothershow = round(lowerstatsother*100);
+                    int upperstatsmaleshow = round(upperstatsmale*100);
+                    int upperstatsfemaleshow = round(upperstatfesmale*100);
+                    int upperstatsothershow = round(upperstatsother*100);
                     String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")";
                     String lowerString2 = Integer.toString(lowerstatsshow)+"%"+"\n";
                     SpannableString ss1=  new SpannableString(lowerString2+lowerString1);
-                    ss1.setSpan(new RelativeSizeSpan(0.8f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    ss1.setSpan(new RelativeSizeSpan(0.6f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    SpannableString ss1qst = new SpannableString((currentQstDown+"\n"));
+                    ss1qst.setSpan(new RelativeSizeSpan(0.8f),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     //System.out.println("other0 "+other0i);
                     //System.out.println("other1 "+other1i);
                     String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")";
                     String upperString2 =Integer.toString(upperstatsshow)+"%"+"\n";
                     SpannableString ss2=  new SpannableString(upperString2+upperString1);
-                    ss2.setSpan(new RelativeSizeSpan(0.8f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
-                    lowerText.setText( ss1);
+                    ss2.setSpan(new RelativeSizeSpan(0.6f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
+                    SpannableString ss2qst = new SpannableString((currentQstUp+"\n"));
+                    ss2qst.setSpan(new RelativeSizeSpan(0.8f),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    if(buttonPressed==0){
+                        ss2qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }else{
+                        ss1qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+
+                    lowerText.setText( TextUtils.concat(ss1qst, ss1));
                     //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
                     //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
-                    upperText.setText(ss2);
+                    upperText.setText(TextUtils.concat(ss2qst, ss2));
                     //System.out.println("other0 "+other0i);
                     //System.out.println("other1 "+other1i);
                     showstats=0;
@@ -899,21 +1011,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        /*
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            public void run() {
-                // UI code goes here
 
-            }
-        });
-        */
-        return true;
-    }
 
     @Override
     public boolean onOptionsItemSelected( MenuItem item) {
@@ -922,36 +1020,14 @@ public class MainActivity extends AppCompatActivity {
                 // as you specify a parent activity in AndroidManifest.xml.
                 int id = item.getItemId();
 
-                //noinspection SimplifiableIfStatement
-                if (id == R.id.reset) {
-                    globalI = 0;
-                    SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = SP2.edit();
-                    editor.putInt("state", 0);
-                    editor.apply();
-                    editor.commit();
-                } else if (id == R.id.submitQuestion) {
-                    Intent i = new Intent(MainActivity.this, SubmitQuestion.class);
-                    startActivity(i);
-                } else if (id == R.id.changeTextColor) {
-                    TextView upperText = findViewById(R.id.textViewUp);
-                    TextView lowerText = findViewById(R.id.textViewDown);
-                    if (upperText.getCurrentTextColor() == -16777216 || upperText.getCurrentTextColor() == -13355980) {
-                        upperText.setTextColor(Color.WHITE);
-                        lowerText.setTextColor(Color.WHITE);
-                    } else {
-                        upperText.setTextColor(Color.BLACK);
-                        lowerText.setTextColor(Color.BLACK);
-                    }
-                }else if (id==R.id.logout){
-                    SharedPreferences SP =getSharedPreferences("user",MODE_PRIVATE);
-                    SharedPreferences.Editor SPE = SP.edit();
-                    SPE.clear();
-                    SPE.apply();
-                    Intent i = new Intent(MainActivity.this,LoginActivity.class);
-                    startActivity(i);
-                    finish();
+
+                if(id== android.R.id.home){
+                    mDrawerLayout.openDrawer(GravityCompat.START);
+                    return true;
+
                 }
+
+
 
         return super.onOptionsItemSelected(item);
     }
