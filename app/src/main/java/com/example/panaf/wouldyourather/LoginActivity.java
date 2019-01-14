@@ -55,7 +55,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     /**
      * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
+     *
      */
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
@@ -132,9 +132,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
         SharedPreferences SP = getSharedPreferences("user",MODE_PRIVATE);
         if(SP.contains("username")&&(!(SP.getString("username",null).equals(null)))){
-            Intent i = new Intent(LoginActivity.this,MainActivity.class);
-            finish();
-            startActivity(i);
+            if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+
+                Intent i = new Intent(LoginActivity.this,MainActivity.class);
+                finish();
+                startActivity(i);
+            }else{
+                Intent i = new Intent(LoginActivity.this,MainActivityCompatibility.class);
+                finish();
+                startActivity(i);
+            }
+
         }
 
     }
@@ -283,7 +291,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected String doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             String reg_url = "http://83.212.84.230/login.php";
             String response = null;
             try {

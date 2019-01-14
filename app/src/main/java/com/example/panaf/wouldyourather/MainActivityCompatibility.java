@@ -21,6 +21,8 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,10 +30,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import static java.lang.Math.abs;
@@ -66,7 +65,7 @@ import static java.lang.Math.round;
 
 //import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivityCompatibility extends AppCompatActivity {
     SharedPreferences SP;
     SharedPreferences SP2;
     Context ctx = this;
@@ -84,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawer;
     private FloatingActionButton fab;
     private DrawerLayout mDrawerLayout;
-    RoundCornerProgressBar progress1;
+
     float sanity=50.0f ;
 
 
@@ -93,15 +92,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_compatibility);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         setSupportActionBar(toolbar);
         ActionBar actionbar = getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
+
+
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
         accessWebService();
@@ -113,64 +112,10 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
         sanity =  SP4.getFloat("sanity",50.00f);
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        // set item as selected to persist highlight
-                        menuItem.setChecked(true);
-                        // close drawer when item is tapped
-                        int id = menuItem.getItemId();
-                        mDrawerLayout.closeDrawers();
-                        //noinspection SimplifiableIfStatement
-                        if (id == R.id.reset) {
-                            globalI = 0;
-                            SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = SP2.edit();
-                            editor.putInt("state", 0);
-                            editor.apply();
-                            editor.commit();
-                        } else if (id == R.id.submitQuestion) {
-                            Intent i = new Intent(MainActivity.this, SubmitQuestion.class);
-                            startActivity(i);
-                        } else if (id == R.id.changeTextColor) {
-                            TextView upperText = findViewById(R.id.textViewUp);
-                            TextView lowerText = findViewById(R.id.textViewDown);
-                            if (upperText.getCurrentTextColor() == -16777216 || upperText.getCurrentTextColor() == -13355980) {
-                                upperText.setTextColor(Color.WHITE);
-                                lowerText.setTextColor(Color.WHITE);
-                            } else {
-                                upperText.setTextColor(Color.BLACK);
-                                lowerText.setTextColor(Color.BLACK);
-                            }
-                        }else if (id==R.id.logout){
-                            SharedPreferences SP =getSharedPreferences("user",MODE_PRIVATE);
-                            SharedPreferences.Editor SPE = SP.edit();
-                            SPE.clear();
-                            SPE.apply();
-                            Intent i = new Intent(MainActivity.this,LoginActivity.class);
-                            startActivity(i);
-                            finish();
-                        }
 
-                        // Add code here to update the UI based on the item selected
-                        // For example, swap UI fragments here
 
-                        return true;
-                    }
-                });
-        View header =navigationView.getHeaderView(0);
-        TextView nav_header = header.findViewById(R.id.nav_header_textView);
-        SharedPreferences SP3 = getSharedPreferences("user",MODE_PRIVATE);
-        String username = SP3.getString("username","empty");
-        nav_header.setText(username);
 
-        progress1 = (RoundCornerProgressBar) header.findViewById(R.id.progress_bar);
-        progress1.setProgressColor(Color.parseColor("#ed3b27"));
-        progress1.setProgressBackgroundColor(Color.parseColor("#808080"));
-        progress1.setMax(100);
-        progress1.setProgress(50);
+
 
     }
 
@@ -1076,31 +1021,31 @@ public class MainActivity extends AppCompatActivity {
                         ss2qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         if(upperstatsshow>=lowerstatsshow){
                             sanity = sanity + coeff;
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                             SP4.edit().putFloat("sanity",sanity).apply();
                             System.out.println("sanity "+sanity+" coeff "+coeff);
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                         }else {
                             sanity = sanity - coeff;
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                             SP4.edit().putFloat("sanity",sanity).apply();
                             System.out.println("sanity "+sanity+" coeff "+coeff);
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                         }
                     }else{
                         ss1qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         if(upperstatsshow<=lowerstatsshow){
                             sanity = sanity + coeff;
-                            progress1.setProgress(( sanity));
+                            //progress1.setProgress(( sanity));
                             SP4.edit().putFloat("sanity", sanity).apply();
                             System.out.println("sanity "+sanity+" coeff "+coeff);
-                            progress1.setProgress(sanity);
+                           // progress1.setProgress(sanity);
                         }else {
                             sanity = sanity - coeff;
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                             SP4.edit().putFloat("sanity",sanity).apply();
                             System.out.println("sanity "+sanity+" coeff "+coeff);
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                         }
                     }
 
@@ -1227,31 +1172,31 @@ public class MainActivity extends AppCompatActivity {
                         ss2qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         if(upperstatsshow>=lowerstatsshow){
                             sanity = sanity + coeff;
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                             SP4.edit().putFloat("sanity",sanity).apply();
                             System.out.println("sanity "+sanity);
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                         }else {
                             sanity = sanity - coeff;
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                             SP4.edit().putFloat("sanity",sanity).apply();
                             System.out.println("sanity "+sanity);
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                         }
                     }else{
                         ss1qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         if(upperstatsshow<=lowerstatsshow){
                             sanity = sanity + coeff;
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                             SP4.edit().putFloat("sanity",sanity).apply();
                             System.out.println("sanity "+sanity);
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                         }else {
                             sanity = sanity - coeff;
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                             SP4.edit().putFloat("sanity",sanity).apply();
                             System.out.println("sanity "+sanity);
-                            progress1.setProgress(sanity);
+                            //progress1.setProgress(sanity);
                         }
                     }
 
@@ -1337,7 +1282,7 @@ public class MainActivity extends AppCompatActivity {
             if(!(result.equals("error"))){
                 Log.d("comments",jsonCommentResult);
                 System.out.println("comments "+jsonCommentResult);
-                Intent i = new Intent(MainActivity.this,Comments.class);
+                Intent i = new Intent(MainActivityCompatibility.this,Comments.class);
                 i.putExtra("comments",jsonCommentResult);
                 i.putExtra("question",Integer.valueOf(result));
                 startActivity(i);
@@ -1349,19 +1294,49 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected( MenuItem item) {
-                //TODO: make NavigationView compatible with android M
-                // Handle action bar item clicks here. The action bar will
-                // automatically handle clicks on the Home/Up button, so long
-                // as you specify a parent activity in AndroidManifest.xml.
-                int id = item.getItemId();
+        //TODO: make NavigationView compatible with android M
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
-
-                if(id== android.R.id.home){
-                    mDrawerLayout.openDrawer(GravityCompat.START);
-                    return true;
-
-                }
+        if (id == R.id.reset) {
+            globalI = 0;
+            SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
+            SharedPreferences.Editor editor = SP2.edit();
+            editor.putInt("state", 0);
+            editor.apply();
+            editor.commit();
+        } else if (id == R.id.submitQuestion) {
+            Intent i = new Intent(MainActivityCompatibility.this, SubmitQuestion.class);
+            startActivity(i);
+        } else if (id == R.id.changeTextColor) {
+            TextView upperText = findViewById(R.id.textViewUp);
+            TextView lowerText = findViewById(R.id.textViewDown);
+            if (upperText.getCurrentTextColor() == -16777216 || upperText.getCurrentTextColor() == -13355980) {
+                upperText.setTextColor(Color.WHITE);
+                lowerText.setTextColor(Color.WHITE);
+            } else {
+                upperText.setTextColor(Color.BLACK);
+                lowerText.setTextColor(Color.BLACK);
+            }
+        }else if (id==R.id.logout){
+            SharedPreferences SP =getSharedPreferences("user",MODE_PRIVATE);
+            SharedPreferences.Editor SPE = SP.edit();
+            SPE.clear();
+            SPE.apply();
+            Intent i = new Intent(MainActivityCompatibility.this,LoginActivity.class);
+            startActivity(i);
+            finish();
+        }
 
 
 

@@ -16,8 +16,6 @@ public class MyListAdapter extends ArrayAdapter<String> {
 
     public MyListAdapter(Activity context, String[] comment,String[] user, String[] date) {
         super(context, R.layout.mylist, comment);
-        // TODO Auto-generated constructor stub
-
         this.context=context;
         this.comment=comment;
         this.user=user;

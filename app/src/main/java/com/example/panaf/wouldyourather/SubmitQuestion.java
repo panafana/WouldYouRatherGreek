@@ -58,7 +58,6 @@ public class SubmitQuestion extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             String reg_url = "http://83.212.84.230/submitquestion.php";
             try {
                 URL url = new URL(reg_url);
