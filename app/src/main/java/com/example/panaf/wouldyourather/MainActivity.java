@@ -4,13 +4,17 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.StrictMode;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -24,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
@@ -36,6 +41,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -67,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private String url = "http://83.212.84.230/getquestions.php";
     private String getStatsUrl ="http://83.212.84.230/getstats.php";
     private String commentsUrl ="http://83.212.84.230/getcomments.php";
-    int globalI =0;
+    int globalI =0,newquestionscount=0;
     int showstats,buttonPressed=0;
     float x=0,y=0,xu=0,yu=0;
     String currentQstUp,currentQstDown;
@@ -75,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawer;
     private FloatingActionButton fab;
     private DrawerLayout mDrawerLayout;
+    RoundCornerProgressBar progress1;
+    float sanity=50.0f ;
+
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -98,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
         SP2 = getSharedPreferences("gameState",MODE_PRIVATE);
         globalI=SP2.getInt("state",0);
         showstats=1;
+        SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
+        sanity =  SP4.getFloat("sanity",50.00f);
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
@@ -152,44 +164,13 @@ public class MainActivity extends AppCompatActivity {
         String username = SP3.getString("username","empty");
         nav_header.setText(username);
 
-        final ImageView or = findViewById(R.id.or);
-        or.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN){
-                    //do something when pressed down
-                    //Log.d("or", "or clicked");
-                    or.setImageResource(R.drawable.button_pressed);
-                    or.setColorFilter(ctx.getResources().getColor(R.color.tint_whitee),PorterDuff.Mode.MULTIPLY);
-
-                    return true;
-                }
-                else if(event.getAction() == MotionEvent.ACTION_UP){
-                    //do something when let go
-                    or.setImageResource(R.drawable.button_unpressed);
-                    if(showstats==0){
-                        or.performClick();
-                    }
-
-                    or.setColorFilter(null);
-                    return true;
-                }
-                return false;
-            }
-        });
-        or.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d("or","clicked");
-                GetComments gc = new GetComments();
-                gc.execute(new String[]{commentsUrl,Integer.toString(globalI-1)});
-
-
-            }
-        });
-
+        progress1 = (RoundCornerProgressBar) header.findViewById(R.id.progress_bar);
+        progress1.setProgressColor(Color.parseColor("#ed3b27"));
+        progress1.setProgressBackgroundColor(Color.parseColor("#808080"));
+        progress1.setMax(100);
+        progress1.setProgress(50);
 
     }
-
 
 
     void resetGameState (){
@@ -305,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             makeLists();
+
             playGame();
 
         }
@@ -414,6 +396,7 @@ public class MainActivity extends AppCompatActivity {
                 females1.add(female1);
                 others1.add(other1);
                 System.out.println("New data: "+ (i+1));
+                newquestionscount=i+1;
             }
 
         } catch (JSONException e) {
@@ -591,6 +574,22 @@ public class MainActivity extends AppCompatActivity {
         final ImageView lowerImage2 = findViewById(R.id.lowerImage2);
         final TextView upperText = findViewById(R.id.textViewUp);
         final TextView lowerText = findViewById(R.id.textViewDown);
+        final ImageView upperImageStats = findViewById(R.id.uppperImageStats);
+        final ImageView upperImageStats2 = findViewById(R.id.uppperImageStats2);
+        final ImageView lowerImageStats = findViewById(R.id.lowerImageStats);
+        final ImageView lowerImageStats2 = findViewById(R.id.lowerImageStats2);
+        final ImageView shareImage = findViewById(R.id.share_stats);
+        final ImageView shareImage2 = findViewById(R.id.share_stats2);
+        final ImageView commentImage = findViewById(R.id.comment_stats);
+        final ImageView commentImage2 = findViewById(R.id.comment_stats2);
+        final ImageView orStats = findViewById(R.id.or_stats);
+        final ImageView orStats2 = findViewById(R.id.or_stats2);
+        Toast.makeText(getApplicationContext(), newquestionscount+" νέες ερωτήσεις", Toast.LENGTH_LONG).show();
+
+        SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
+        final float coeff = 100f*(1f/questions.size());
+
+
 
         String[] qst = questions.get(globalI).split("@",2);
         System.out.println(qst[0]);
@@ -602,6 +601,257 @@ public class MainActivity extends AppCompatActivity {
         //upperText.setShadowLayer(2, 2, 4, Color.BLACK);
         //lowerText.setShadowLayer(10, 2, 4, Color.BLACK);
         nextQuestion();
+
+        final ImageView or = findViewById(R.id.or);
+        or.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+                    or.setImageResource(R.drawable.button_pressed);
+                    or.setColorFilter(ctx.getResources().getColor(R.color.tint_whitee),PorterDuff.Mode.MULTIPLY);
+
+                    return true;
+                }
+                else if(event.getAction() == MotionEvent.ACTION_UP){
+                    //do something when let go
+                    or.setImageResource(R.drawable.button_unpressed);
+                    if(showstats==0){
+                        or.performClick();
+                    }
+
+                    or.setColorFilter(null);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        or.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("or","clicked");
+                GetComments gc = new GetComments();
+                gc.execute(new String[]{commentsUrl,Integer.toString(globalI-1)});
+
+
+            }
+        });
+
+        shareImage.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+                    shareImage.setVisibility(View.INVISIBLE);
+                    shareImage2.setVisibility(View.VISIBLE);
+                    return true;
+                }
+                else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
+                    //do something when let go
+                    shareImage2.setVisibility(View.INVISIBLE);
+                    shareImage.setVisibility(View.VISIBLE);
+                    if(showstats==0){
+                        shareImage.performClick();
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        shareImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+                StrictMode.setVmPolicy(builder.build());
+                Bitmap bm = screenShot(getWindow().getDecorView().findViewById(android.R.id.content));
+                File file = saveBitmap(bm, "mantis_image.png");
+                Log.i("chase", "filepath: "+file.getAbsolutePath());
+                Uri uri = Uri.fromFile(new File(file.getAbsolutePath()));
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "Check out my app.");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                shareIntent.setType("image/*");
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(shareIntent, "share via"));
+            }
+        });
+
+        commentImage.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+                    commentImage.setVisibility(View.INVISIBLE);
+                    commentImage2.setVisibility(View.VISIBLE);
+
+                    return true;
+                }
+                else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
+                    //do something when let go
+                    commentImage2.setVisibility(View.INVISIBLE);
+                    commentImage.setVisibility(View.VISIBLE);
+                    if(showstats==0){
+                        commentImage.performClick();
+                    }
+
+
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        commentImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("or","clicked");
+                GetComments gc = new GetComments();
+                gc.execute(new String[]{commentsUrl,Integer.toString(globalI-1)});
+            }
+        });
+
+        orStats.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+                    orStats.setVisibility(View.INVISIBLE);
+                    orStats2.setVisibility(View.VISIBLE);
+
+                    return true;
+                }
+                else if(event.getAction() == MotionEvent.ACTION_UP){
+                    //do something when let go
+                    orStats2.setVisibility(View.INVISIBLE);
+                    orStats.setVisibility(View.VISIBLE);
+                    if(showstats==0){
+                        orStats.performClick();
+                    }
+
+
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        upperImageStats.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                float x2=0,y2=0;
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+                    //lowerImage.setImageResource(R.drawable.red_pressed);
+                    upperImageStats.setVisibility(View.INVISIBLE);
+                    upperImageStats2.setVisibility(View.VISIBLE);
+                    //lowerImage.setColorFilter(ctx.getResources().getColor(R.color.tint_red),PorterDuff.Mode.MULTIPLY);
+                    x=motionEvent.getX();
+                    y=motionEvent.getY();
+                    return true;
+                }
+                else if(motionEvent.getAction() == MotionEvent.ACTION_UP ){
+                    x2=motionEvent.getX();
+                    y2=motionEvent.getY();
+                    //Log.d("absx ",Float.toString(abs(x2-x)));
+                    //Log.d("absy ",Float.toString(abs(y2-y)));
+                    //lowerImage.setImageResource(R.drawable.red_unpressed);
+                    upperImageStats2.setVisibility(View.INVISIBLE);
+                    upperImageStats.setVisibility(View.VISIBLE);
+                    //do something when let go
+                    if((abs(x2-x))>200||(abs(y2-y))>200){
+                        //lowerImage.setColorFilter(null);
+                        return true;
+                    }else{
+                        lowerImage.performClick();
+                        upperImageStats.setVisibility(View.INVISIBLE);
+                        upperImageStats2.setVisibility(View.INVISIBLE);
+                        lowerImageStats.setVisibility(View.INVISIBLE);
+                        lowerImageStats2.setVisibility(View.INVISIBLE);
+                        shareImage.setVisibility(View.INVISIBLE);
+                        shareImage2.setVisibility(View.INVISIBLE);
+                        commentImage.setVisibility(View.INVISIBLE);
+                        commentImage2.setVisibility(View.INVISIBLE);
+                        orStats.setVisibility(View.INVISIBLE);
+                        orStats2.setVisibility(View.INVISIBLE);
+
+                        upperImage.setVisibility(View.VISIBLE);
+                        upperImage2.setVisibility(View.VISIBLE);
+                        lowerImage.setVisibility(View.VISIBLE);
+                        lowerImage2.setVisibility(View.VISIBLE);
+                        or.setVisibility(View.VISIBLE);
+                        //lowerImage.setColorFilter(null);
+                    }
+                    return true;
+                }
+
+
+                return false;
+            }
+        });
+
+        lowerImageStats.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                float x2=0,y2=0;
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+                    //lowerImage.setImageResource(R.drawable.red_pressed);
+                    lowerImageStats.setVisibility(View.INVISIBLE);
+                    lowerImageStats2.setVisibility(View.VISIBLE);
+
+
+                    //lowerImage.setColorFilter(ctx.getResources().getColor(R.color.tint_red),PorterDuff.Mode.MULTIPLY);
+                    x=motionEvent.getX();
+                    y=motionEvent.getY();
+                    return true;
+                }
+                else if(motionEvent.getAction() == MotionEvent.ACTION_UP ){
+                    x2=motionEvent.getX();
+                    y2=motionEvent.getY();
+                    //Log.d("absx ",Float.toString(abs(x2-x)));
+                    //Log.d("absy ",Float.toString(abs(y2-y)));
+                    //lowerImage.setImageResource(R.drawable.red_unpressed);
+                    lowerImageStats2.setVisibility(View.INVISIBLE);
+                    lowerImageStats.setVisibility(View.VISIBLE);
+                    //do something when let go
+                    if((abs(x2-x))>200||(abs(y2-y))>200){
+                        //lowerImage.setColorFilter(null);
+                        return true;
+                    }else{
+                        lowerImage.performClick();
+                        upperImageStats.setVisibility(View.INVISIBLE);
+                        upperImageStats2.setVisibility(View.INVISIBLE);
+                        lowerImageStats.setVisibility(View.INVISIBLE);
+                        lowerImageStats2.setVisibility(View.INVISIBLE);
+                        shareImage.setVisibility(View.INVISIBLE);
+                        shareImage2.setVisibility(View.INVISIBLE);
+                        commentImage.setVisibility(View.INVISIBLE);
+                        commentImage2.setVisibility(View.INVISIBLE);
+                        orStats.setVisibility(View.INVISIBLE);
+                        orStats2.setVisibility(View.INVISIBLE);
+
+                        upperImage.setVisibility(View.VISIBLE);
+                        upperImage2.setVisibility(View.VISIBLE);
+                        lowerImage.setVisibility(View.VISIBLE);
+                        lowerImage2.setVisibility(View.VISIBLE);
+                        or.setVisibility(View.VISIBLE);
+
+                        //lowerImage.setColorFilter(null);
+                    }
+                    return true;
+                }
+
+
+                return false;
+            }
+        });
 
         upperImage.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -716,6 +966,8 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
                 buttonPressed=0;
                 if(showstats==0) {
+
+
                     //Log.d("click", "Up clicked");
                     //send correct gender on stats submit
                     if(genderS.equals("male")){
@@ -755,6 +1007,20 @@ public class MainActivity extends AppCompatActivity {
                     }
                     showstats=1;
                 }else{
+
+                    upperImage.setVisibility(View.INVISIBLE);
+                    upperImage2.setVisibility(View.INVISIBLE);
+                    lowerImage.setVisibility(View.INVISIBLE);
+                    lowerImage2.setVisibility(View.INVISIBLE);
+                    or.setVisibility(View.INVISIBLE);
+
+                    upperImageStats.setVisibility(View.VISIBLE);
+                    lowerImageStats.setVisibility(View.VISIBLE);
+                    shareImage.setVisibility(View.VISIBLE);
+                    commentImage.setVisibility(View.VISIBLE);
+                    orStats.setVisibility(View.VISIBLE);
+
+
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
                     if(globalI>1){
                         male0i =(male0.get(globalI-1));
@@ -806,8 +1072,34 @@ public class MainActivity extends AppCompatActivity {
                     ss2qst.setSpan(new RelativeSizeSpan(0.8f),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     if(buttonPressed==0){
                         ss2qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        if(upperstatsshow>=lowerstatsshow){
+                            sanity = sanity + coeff;
+                            progress1.setProgress(sanity);
+                            SP4.edit().putFloat("sanity",sanity).apply();
+                            System.out.println("sanity "+sanity+" coeff "+coeff);
+                            progress1.setProgress(sanity);
+                        }else {
+                            sanity = sanity - coeff;
+                            progress1.setProgress(sanity);
+                            SP4.edit().putFloat("sanity",sanity).apply();
+                            System.out.println("sanity "+sanity+" coeff "+coeff);
+                            progress1.setProgress(sanity);
+                        }
                     }else{
                         ss1qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        if(upperstatsshow<=lowerstatsshow){
+                            sanity = sanity + coeff;
+                            progress1.setProgress(( sanity));
+                            SP4.edit().putFloat("sanity", sanity).apply();
+                            System.out.println("sanity "+sanity+" coeff "+coeff);
+                            progress1.setProgress(sanity);
+                        }else {
+                            sanity = sanity - coeff;
+                            progress1.setProgress(sanity);
+                            SP4.edit().putFloat("sanity",sanity).apply();
+                            System.out.println("sanity "+sanity+" coeff "+coeff);
+                            progress1.setProgress(sanity);
+                        }
                     }
 
 
@@ -831,6 +1123,8 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
                 buttonPressed=1;
                 if(showstats==0) {
+
+
                     //Log.d("click", "Down clicked");
                     if(genderS.equals("male")){
                         submitStats ss = new submitStats(globalI - 1, 1, 1, 0, 0);
@@ -868,6 +1162,18 @@ public class MainActivity extends AppCompatActivity {
                     }
                     showstats=1;
                 }else{
+
+                    upperImage.setVisibility(View.INVISIBLE);
+                    upperImage2.setVisibility(View.INVISIBLE);
+                    lowerImage.setVisibility(View.INVISIBLE);
+                    lowerImage2.setVisibility(View.INVISIBLE);
+                    or.setVisibility(View.INVISIBLE);
+
+                    upperImageStats.setVisibility(View.VISIBLE);
+                    lowerImageStats.setVisibility(View.VISIBLE);
+                    shareImage.setVisibility(View.VISIBLE);
+                    commentImage.setVisibility(View.VISIBLE);
+                    orStats.setVisibility(View.VISIBLE);
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
                     if(globalI>1){
                         male0i =(male0.get(globalI-1));
@@ -917,8 +1223,34 @@ public class MainActivity extends AppCompatActivity {
                     ss2qst.setSpan(new RelativeSizeSpan(0.8f),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     if(buttonPressed==0){
                         ss2qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstUp.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        if(upperstatsshow>=lowerstatsshow){
+                            sanity = sanity + coeff;
+                            progress1.setProgress(sanity);
+                            SP4.edit().putFloat("sanity",sanity).apply();
+                            System.out.println("sanity "+sanity);
+                            progress1.setProgress(sanity);
+                        }else {
+                            sanity = sanity - coeff;
+                            progress1.setProgress(sanity);
+                            SP4.edit().putFloat("sanity",sanity).apply();
+                            System.out.println("sanity "+sanity);
+                            progress1.setProgress(sanity);
+                        }
                     }else{
                         ss1qst.setSpan(new ForegroundColorSpan(Color.GREEN),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        if(upperstatsshow<=lowerstatsshow){
+                            sanity = sanity + coeff;
+                            progress1.setProgress(sanity);
+                            SP4.edit().putFloat("sanity",sanity).apply();
+                            System.out.println("sanity "+sanity);
+                            progress1.setProgress(sanity);
+                        }else {
+                            sanity = sanity - coeff;
+                            progress1.setProgress(sanity);
+                            SP4.edit().putFloat("sanity",sanity).apply();
+                            System.out.println("sanity "+sanity);
+                            progress1.setProgress(sanity);
+                        }
                     }
 
                     lowerText.setText( TextUtils.concat(ss1qst, ss1));
@@ -928,6 +1260,7 @@ public class MainActivity extends AppCompatActivity {
                     //System.out.println("other0 "+other0i);
                     //System.out.println("other1 "+other1i);
                     showstats=0;
+
                 }
             }
         });
@@ -1198,6 +1531,30 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    private Bitmap screenShot(View view) {
+        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(),view.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+        return bitmap;
+    }
+
+    private static File saveBitmap(Bitmap bm, String fileName){
+        final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Screenshots";
+        File dir = new File(path);
+        if(!dir.exists())
+            dir.mkdirs();
+        File file = new File(dir, fileName);
+        try {
+            FileOutputStream fOut = new FileOutputStream(file);
+            bm.compress(Bitmap.CompressFormat.PNG, 90, fOut);
+            fOut.flush();
+            fOut.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file;
     }
 
 
