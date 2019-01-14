@@ -38,7 +38,8 @@
         <activity android:name=".SubmitQuestion" />
         <activity
             android:name=".Comments"
-            android:windowSoftInputMode="adjustResize"></activity>
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".MainActivityCompatibility"></activity>
     </application>
 
 </manifest>
