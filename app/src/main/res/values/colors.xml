@@ -9,4 +9,8 @@
     <color name="tint_blue">#00b0ff</color>
     <color name="tint_red">#ff0032</color>
     <color name="tint_whitee">#e5e5e5</color>
+    <color name="action_bar_color">#8E95A7</color>
+    <color name="text_color">#292631</color>
+    <color name="answer_up_color">#fee100</color>
+    <color name="answer_down_color">#fee100</color>
 </resources>

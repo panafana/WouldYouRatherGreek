@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group>
-        <item android:id="@+id/reset"
-            android:icon="@drawable/ic_launcher_foreground"
+        <item
+            android:id="@+id/reset"
+            android:icon="@android:drawable/ic_menu_rotate"
             android:title="Reset" />
-        <item android:id="@+id/submitQuestion"
-            android:icon="@drawable/ic_launcher_foreground"
+        <item
+            android:id="@+id/submitQuestion"
+            android:icon="@android:drawable/ic_menu_upload"
             android:title="Υποβολή ερώτησης" />
-        <item android:id="@+id/changeTextColor"
-            android:icon="@drawable/ic_launcher_foreground"
+        <item
+            android:id="@+id/changeTextColor"
+            android:icon="@android:drawable/ic_menu_preferences"
             android:title="Αλλαγή χρώματος γραμμάτων" />
-        <item android:id="@+id/logout"
-            android:icon="@drawable/ic_launcher_foreground"
+        <item
+            android:id="@+id/logout"
+            android:icon="@android:drawable/ic_lock_power_off"
             android:title="Αποσύνδεση" />
     </group>
 

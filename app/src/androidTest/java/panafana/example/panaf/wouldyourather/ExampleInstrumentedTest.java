@@ -1,4 +1,4 @@
-package com.example.panaf.wouldyourather;
+package panafana.example.panaf.wouldyourather;
 
 import android.content.Context;
 
