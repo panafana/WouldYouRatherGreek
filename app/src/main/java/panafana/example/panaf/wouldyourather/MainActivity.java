@@ -23,6 +23,8 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -69,6 +71,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
+import androidx.core.widget.TextViewCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import static java.lang.Math.abs;
@@ -148,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences SP4 = getSharedPreferences("stats", MODE_PRIVATE);
         sanity = SP4.getFloat("sanity", 50.00f);
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
+         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -157,7 +160,11 @@ public class MainActivity extends AppCompatActivity {
                         menuItem.setChecked(true);
                         // close drawer when item is tapped
                         int id = menuItem.getItemId();
-                        mDrawerLayout.closeDrawers();
+                        //System.out.println("menu id "+id);
+                        if(id>9){
+                            mDrawerLayout.closeDrawers();
+                        }
+
                         //noinspection SimplifiableIfStatement
                         if (id == R.id.reset) {
                             globalI = 0;
@@ -188,6 +195,10 @@ public class MainActivity extends AppCompatActivity {
                             Intent i = new Intent(MainActivity.this, LoginActivity.class);
                             startActivity(i);
                             finish();
+                        }else if(id<10){
+
+
+
                         }
 
                         // Add code here to update the UI based on the item selected
@@ -634,6 +645,10 @@ public class MainActivity extends AppCompatActivity {
         final ImageView commentImage = findViewById(R.id.comment_stats);
         final ImageView commentImage2 = findViewById(R.id.comment_stats2);
 
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(upperText,5,30,2, TypedValue.COMPLEX_UNIT_SP);
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(lowerText,5,30,2, TypedValue.COMPLEX_UNIT_SP);
+
+
         //get only default questions
         for(int i=0;i<categories.size();i++){
             if(categories.get(i).equals("default")){
@@ -645,8 +660,31 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+
         Set<String> uniqueCategories = new HashSet<>(categories);
         System.out.println("Unique gas count: " + uniqueCategories.size());
+        Object[] uniqueCategoriesArray = uniqueCategories.toArray();
+
+        Menu menu = navigationView.getMenu();
+        Menu submenuCategories = menu.addSubMenu(Menu.NONE,Menu.NONE,0,"Κατηγορίες ερωτήσεων");
+
+
+        for(int i=0;i<uniqueCategoriesArray.length;i++){
+            submenuCategories.add(Menu.NONE,i,Menu.NONE,(uniqueCategoriesArray[i].toString())).setCheckable(true).setIcon(R.drawable.ic_check_box_outline_blank_black_24dp).setChecked(false).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    System.out.println(menuItem.isChecked());
+                    if(menuItem.isChecked()){
+                        menuItem.setIcon(R.drawable.ic_check_box_outline_blank_black_24dp);
+                    }else{
+
+                        menuItem.setIcon(R.drawable.ic_check_box_black_24dp);
+                    }
+                    return false;
+                }
+            });
+        }
+
 
         System.out.println("size before "+questions.size());
         questions.removeAll(questions);
@@ -913,6 +951,18 @@ public class MainActivity extends AppCompatActivity {
                         String[] qst = questions.get(globalI).split("@", 2);
                         upperText.setText(qst[0]);
                         lowerText.setText(qst[1]);
+
+                        /*
+                        if(upperText.getTextSize()<lowerText.getTextSize()){
+                            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(lowerText,5,(int)upperText.getTextSize(),2,TypedValue.COMPLEX_UNIT_SP);
+                            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(upperText,5,(int)upperText.getTextSize(),2,TypedValue.COMPLEX_UNIT_SP);
+                        }else{
+                            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(upperText,5,(int)lowerText.getTextSize(),2,TypedValue.COMPLEX_UNIT_SP);
+                            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(lowerText,5,(int)lowerText.getTextSize(),2,TypedValue.COMPLEX_UNIT_SP);
+                        }
+                        System.out.println("upper text size "+upperText.getTextSize());
+                        System.out.println("lower text size "+lowerText.getTextSize());
+                        */
                         currentQstUp=qst[0];
                         currentQstDown=qst[1];
                         System.out.println(qst[0]);
@@ -1020,6 +1070,7 @@ public class MainActivity extends AppCompatActivity {
                     //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
                     //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
                     upperText.setText(TextUtils.concat(ss2qst, ss2));
+
                     showstats=0;
                 }
             }
@@ -1165,6 +1216,7 @@ public class MainActivity extends AppCompatActivity {
                     //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
                     //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
                     upperText.setText(TextUtils.concat(ss2qst, ss2));
+
                     //System.out.println("other0 "+other0i);
                     //System.out.println("other1 "+other1i);
                     showstats=0;

@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -65,6 +66,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
@@ -577,6 +579,9 @@ public class MainActivityCompatibility extends AppCompatActivity {
         final int answerUpColor = getResources().getColor(R.color.answer_up_color);
         final int answerDownColor = getResources().getColor(R.color.answer_down_color);
 
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(upperText,5,30,2, TypedValue.COMPLEX_UNIT_SP);
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(lowerText,5,30,2, TypedValue.COMPLEX_UNIT_SP);
+
         if(newquestionscount>0) Toast.makeText(getApplicationContext(), newquestionscount+" νέες ερωτήσεις", Toast.LENGTH_LONG).show();
 
 
@@ -831,6 +836,8 @@ public class MainActivityCompatibility extends AppCompatActivity {
                         String[] qst = questions.get(globalI).split("@", 2);
                         upperText.setText(qst[0]);
                         lowerText.setText(qst[1]);
+
+
                         currentQstUp=qst[0];
                         currentQstDown=qst[1];
                         System.out.println(qst[0]);
@@ -911,6 +918,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
                     //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
                     //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
                     upperText.setText(TextUtils.concat(ss2qst, ss2));
+
                     showstats=0;
                 }
             }
@@ -953,6 +961,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
                         String[] qst = questions.get(globalI).split("@", 2);
                         lowerText.setText(qst[1]);
                         upperText.setText(qst[0]);
+
                         currentQstUp=qst[0];
                         currentQstDown=qst[1];
                         System.out.println(qst[0]);
@@ -1031,6 +1040,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
                     //lowerText.setText(Integer.toString(lowerstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")");
                     //upperText.setText( Integer.toString(upperstatsshow)+"%"+"\n"+"Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")");
                     upperText.setText(TextUtils.concat(ss2qst, ss2));
+
                     //System.out.println("other0 "+other0i);
                     //System.out.println("other1 "+other1i);
                     showstats=0;

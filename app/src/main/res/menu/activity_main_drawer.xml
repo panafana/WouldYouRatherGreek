@@ -4,19 +4,23 @@
         <item
             android:id="@+id/reset"
             android:icon="@android:drawable/ic_menu_rotate"
-            android:title="Reset" />
+            android:title="Reset"
+            android:orderInCategory="10"/>
         <item
             android:id="@+id/submitQuestion"
             android:icon="@android:drawable/ic_menu_upload"
-            android:title="Υποβολή ερώτησης" />
+            android:title="Υποβολή ερώτησης"
+            android:orderInCategory="11"/>
         <item
             android:id="@+id/changeTextColor"
             android:icon="@android:drawable/ic_menu_preferences"
-            android:title="Αλλαγή χρώματος γραμμάτων" />
+            android:title="Αλλαγή χρώματος γραμμάτων"
+            android:orderInCategory="12"/>
         <item
             android:id="@+id/logout"
             android:icon="@android:drawable/ic_lock_power_off"
-            android:title="Αποσύνδεση" />
+            android:title="Αποσύνδεση"
+            android:orderInCategory="13"/>
     </group>
 
 
