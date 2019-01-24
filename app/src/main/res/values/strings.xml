@@ -33,6 +33,13 @@
         <item>Female</item>
         <item>Non Binary</item>
     </string-array>
+    <string-array name="categories">
+        <item>Γενικές</item>
+        <item>Αστείες</item>
+        <item>Ανησυχητικές</item>
+        <item>Αηδιαστικές</item>
+    </string-array>
+
     <string name="title_activity_test">test</string>
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>

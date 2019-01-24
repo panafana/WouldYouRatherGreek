@@ -585,6 +585,8 @@ public class MainActivityCompatibility extends AppCompatActivity {
         if(newquestionscount>0) Toast.makeText(getApplicationContext(), newquestionscount+" νέες ερωτήσεις", Toast.LENGTH_LONG).show();
 
 
+
+
         String[] qst = questions.get(globalI).split("@",2);
         System.out.println(qst[0]);
         System.out.println(qst[1]);
@@ -893,7 +895,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
                     int upperstatsfemaleshow = round(upperstatfesmale*100);
                     int upperstatsothershow = round(upperstatsother*100);
 
-                    String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")";
+                    String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"%"+ "\nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"%"+"\nΆλλο "+Integer.toString(lowerstatsothershow)+"%";
                     String lowerString2 = Integer.toString(lowerstatsshow)+"%"+"\n";
                     SpannableString ss1=  new SpannableString(lowerString2+lowerString1);
                     ss1.setSpan(new RelativeSizeSpan(0.6f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
@@ -902,7 +904,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
 
                     //System.out.println("other0 "+other0i);
                     //System.out.println("other1 "+other1i);
-                    String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")";
+                    String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"%"+"\nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"%"+"\nΆλλο "+Integer.toString(upperstatsothershow)+"%";
                     String upperString2 =Integer.toString(upperstatsshow)+"%"+"\n";
                     SpannableString ss2=  new SpannableString(upperString2+upperString1);
                     ss2.setSpan(new RelativeSizeSpan(0.6f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
@@ -1015,7 +1017,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
                     int upperstatsmaleshow = round(upperstatsmale*100);
                     int upperstatsfemaleshow = round(upperstatfesmale*100);
                     int upperstatsothershow = round(upperstatsother*100);
-                    String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"% ("+Integer.toString(male1i)+") \nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"% ("+Integer.toString(female1i)+") \nΆλλο "+Integer.toString(lowerstatsothershow)+"% ("+Integer.toString(other1i)+")";
+                    String lowerString1 = "Άνδρες "+Integer.toString(lowerstatsmaleshow)+"%"+"\nΓυναίκες "+Integer.toString(lowerstatsfemaleshow)+"%"+"\nΆλλο "+Integer.toString(lowerstatsothershow)+"%";
                     String lowerString2 = Integer.toString(lowerstatsshow)+"%"+"\n";
                     SpannableString ss1=  new SpannableString(lowerString2+lowerString1);
                     ss1.setSpan(new RelativeSizeSpan(0.6f), lowerString2.length(),lowerString1.length()+lowerString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
@@ -1023,7 +1025,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
                     ss1qst.setSpan(new RelativeSizeSpan(0.8f),0,currentQstDown.length(),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     //System.out.println("other0 "+other0i);
                     //System.out.println("other1 "+other1i);
-                    String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"% ("+Integer.toString(male0i)+") \nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"% ("+Integer.toString(female0i)+") \nΆλλο "+Integer.toString(upperstatsothershow)+"% ("+Integer.toString(other0i)+")";
+                    String upperString1 ="Άνδρες "+Integer.toString(upperstatsmaleshow)+"%"+"\nΓυναίκες "+Integer.toString(upperstatsfemaleshow)+"%"+"\nΆλλο "+Integer.toString(upperstatsothershow)+"%";
                     String upperString2 =Integer.toString(upperstatsshow)+"%"+"\n";
                     SpannableString ss2=  new SpannableString(upperString2+upperString1);
                     ss2.setSpan(new RelativeSizeSpan(0.6f), upperString2.length(),upperString1.length()+upperString2.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set size
