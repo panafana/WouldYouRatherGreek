@@ -107,7 +107,11 @@ public class MainActivity extends AppCompatActivity {
     boolean isGrose = false;
     boolean isCouples = false;
     boolean isNSFW = false;
-
+    int defaultQuestionsCount=0;
+    int funnyQuestionsCount=0;
+    int disturbingQuestionsCount=0;
+    int groseQuestionsCount=0;
+    int max;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -229,6 +233,74 @@ public class MainActivity extends AppCompatActivity {
         progress1.setMax(100);
         progress1.setProgress(50);
 
+        String[] uniqueCategoriesArray = getResources().getStringArray(R.array.categories);
+        Menu menu = navigationView.getMenu();
+        Menu submenuCategories = menu.addSubMenu(Menu.NONE,Menu.NONE,0,"Κατηγορίες ερωτήσεων");
+
+        for(int i=0;i<uniqueCategoriesArray.length;i++){
+            submenuCategories.add(Menu.NONE,i,Menu.NONE,(uniqueCategoriesArray[i])).setCheckable(true).setIcon(R.drawable.ic_check_box_outline_blank_black_24dp).setChecked(false).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    System.out.println(menuItem.toString());
+                    if(menuItem.isChecked()){
+                        menuItem.setIcon(R.drawable.ic_check_box_outline_blank_black_24dp);
+                        switch (menuItem.toString()){
+                            case "Γενικές":isDefault=false;
+                                resetGameState();
+                                break;
+                            case "Αστείες":isFunny=false;
+                                resetGameState();
+                                break;
+                            case "Ανησυχητικές":isDisturbing=false;
+                                resetGameState();
+                                break;
+                            case "Αηδιαστικές": isGrose=false;
+                                resetGameState();
+                                break;
+                        }
+                        //menuItem.setChecked(false);
+                        if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose){
+                            isDefault=true;
+                            max=defaultQuestionsCount;
+                            submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
+                        }
+                        System.out.println("max "+max);
+                        System.out.println("default "+isDefault);
+                        System.out.println("funny "+isFunny);
+                        System.out.println("disturbing "+isDisturbing);
+                        System.out.println("grose "+isGrose);
+                    }else{
+
+                        menuItem.setIcon(R.drawable.ic_check_box_black_24dp);
+                        switch (menuItem.toString()){
+                            case "Γενικές":isDefault=true;
+                                resetGameState();
+                                break;
+                            case "Αστείες":isFunny=true;
+                                resetGameState();
+                                break;
+                            case "Ανησυχητικές":isDisturbing=true;
+                                resetGameState();
+                                break;
+                            case "Αηδιαστικές": isGrose=true;
+                                resetGameState();
+                                break;
+                        }
+                        System.out.println("max "+max);
+                        System.out.println("default "+isDefault);
+                        System.out.println("funny "+isFunny);
+                        System.out.println("disturbing "+isDisturbing);
+                        System.out.println("grose "+isGrose);
+                        //menuItem.setChecked(true);
+                    }
+                    return false;
+                }
+            });
+        }
+        submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
+
+
+
         //permissions
         if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -284,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    int nextQuestion(ArrayList<String> questionIds){
+    int nextQuestion(int maxQ){
 
         int counter=0;
         Gson gson = new Gson();
@@ -294,19 +366,19 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> set = gson.fromJson(json, type);
 
         final int min = 0;
-        final int max = questionIds.size();
-        int random = new Random().nextInt((max - min) + 1) + min;
+        final int maxi = maxQ;
+        int random = new Random().nextInt((maxi - min) + 1) + min;
         System.out.println("random value "+random);
         if(json==null){
             return random;
         }
 
         while(set.contains(String.valueOf(random))){
-            random = new Random().nextInt((max - min) + 1) + min;
+            random = new Random().nextInt((maxi - min) + 1) + min;
             System.out.println("random value "+random);
 
             counter++;
-            if(counter>questionIds.size()){
+            if(counter>maxi){
                 Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
                 resetGameState();
                 break;
@@ -687,8 +759,10 @@ public class MainActivity extends AppCompatActivity {
         final ImageView commentImage2 = findViewById(R.id.comment_stats2);
         final ImageView or = findViewById(R.id.or);
 
+        //making text scalable
         TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(upperText,5,30,2, TypedValue.COMPLEX_UNIT_SP);
         TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(lowerText,5,30,2, TypedValue.COMPLEX_UNIT_SP);
+
 
         SharedPreferences SP5 = getSharedPreferences("categories", MODE_PRIVATE);
         isDefault = SP5.getBoolean("isDefault",true);
@@ -703,10 +777,7 @@ public class MainActivity extends AppCompatActivity {
         bigTable.add(questions);
         bigTable.add(categories);
 
-        int defaultQuestionsCount=0;
-        int funnyQuestionsCount=0;
-        int disturbingQuestionsCount=0;
-        int groseQuestionsCount=0;
+
 
 
         for(int i=0;i<bigTable.get(0).size();i++){
@@ -726,70 +797,6 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("disturbing questions "+disturbingQuestionsCount);
         System.out.println("grose questions "+groseQuestionsCount);
 
-        String[] uniqueCategoriesArray = getResources().getStringArray(R.array.categories);
-
-        Menu menu = navigationView.getMenu();
-        Menu submenuCategories = menu.addSubMenu(Menu.NONE,Menu.NONE,0,"Κατηγορίες ερωτήσεων");
-
-
-
-        for(int i=0;i<uniqueCategoriesArray.length;i++){
-
-            submenuCategories.add(Menu.NONE,i,Menu.NONE,(uniqueCategoriesArray[i])).setCheckable(true).setIcon(R.drawable.ic_check_box_outline_blank_black_24dp).setChecked(false).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem menuItem) {
-                    System.out.println(menuItem.toString());
-
-
-                    if(menuItem.isChecked()){
-                        menuItem.setIcon(R.drawable.ic_check_box_outline_blank_black_24dp);
-                        switch (menuItem.toString()){
-                            case "Γενικές":isDefault=false;
-                                    resetGameState();
-                                    break;
-                            case "Αστείες":isFunny=false;
-                                    resetGameState();
-                                    break;
-                            case "Ανησυχητικές":isDisturbing=false;
-                                    resetGameState();
-                                    break;
-                            case "Αηδιαστικές": isGrose=false;
-                                    resetGameState();
-                                    break;
-                        }
-                        if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose){
-                            isDefault=true;
-                            submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
-                        }
-
-
-                    }else{
-
-                        menuItem.setIcon(R.drawable.ic_check_box_black_24dp);
-                        switch (menuItem.toString()){
-                            case "Γενικές":isDefault=true;
-                                resetGameState();
-                                break;
-                            case "Αστείες":isFunny=true;
-                                resetGameState();
-                                break;
-                            case "Ανησυχητικές":isDisturbing=true;
-                                resetGameState();
-                                break;
-                            case "Αηδιαστικές": isGrose=true;
-                                resetGameState();
-                                break;
-                        }
-
-
-                    }
-
-                    return false;
-                }
-            });
-        }
-        submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
-
 
 
         final int answerUpColor = getResources().getColor(R.color.answer_up_color);
@@ -800,8 +807,19 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
         final float coeff = 100f*(1f/questions.size());
+        max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount-1;
 
-        globalI=nextQuestion(bigTable.get(0));
+
+        globalI=nextQuestion(max);
+        while(true){
+            String category = bigTable.get(2).get(globalI);
+            if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
+                break;
+            }else{
+                globalI=nextQuestion(max);
+            }
+        }
+        System.out.println("category "+bigTable.get(2).get(globalI));
         System.out.println("first gloabI "+globalI);
 
         String[] qst = bigTable.get(1).get(globalI).split("@",2);
@@ -1084,7 +1102,7 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
                 buttonPressed=0;
                 if(showstats==0) {
-                    globalI=nextQuestion(bigTable.get(0));
+                    globalI=nextQuestion(max);
 
                     questionsTillAd--;
                     if(questionsTillAd<0){
@@ -1093,13 +1111,28 @@ public class MainActivity extends AppCompatActivity {
                         }
                         questionsTillAd=20;
                     }
-
+                    /*
+                    max=0;
+                    if(isDefault){
+                        max+=defaultQuestionsCount;
+                    }
+                    if(isFunny){
+                        max+=funnyQuestionsCount;
+                    }
+                    if(isGrose){
+                        max+=groseQuestionsCount;
+                    }
+                    if(isDisturbing){
+                        max+=disturbingQuestionsCount;
+                    }
+                    */
+                    System.out.println("max "+max);
                     while(true){
                         String category = bigTable.get(2).get(globalI);
                         if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
                             break;
                         }else{
-                            globalI=nextQuestion(bigTable.get(0));
+                            globalI=nextQuestion(max);
                         }
                     }
                     System.out.println("category "+bigTable.get(2).get(globalI));
@@ -1135,19 +1168,24 @@ public class MainActivity extends AppCompatActivity {
 
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
 
-                    male0i =(male0.get(globalI));
+                    try{
+                        male0i =(male0.get(globalI));
+                    }catch (IndexOutOfBoundsException e){
+                        globalI=0;
+                        male0i =(male0.get(globalI));
+                    }
                     female0i=(female0.get(globalI));
                     other0i = (other0.get(globalI));
                     male1i=(male1.get(globalI));
                     female1i=(female1.get(globalI));
                     other1i=(other1.get(globalI));
 
-                    float lowerstatsmale = (float) (male1i)/(float) (male0i+male1i);
-                    float lowerstatfesmale = (float) (female1i)/(float) (female0i+female1i);
-                    float lowerstatsother = (float) (other1i)/(float) (other1i+other0i);
-                    float upperstatsmale = (float) (male0i)/(float) (male0i+male1i);
-                    float upperstatfesmale = (float) (female0i)/(float) (female0i+female1i);
-                    float upperstatsother = (float) (other0i)/(float) (other0i+other1i);
+                    float lowerstatsmale = (float) (male1i)/(float) (female1i+male1i+other1i);
+                    float lowerstatfesmale = (float) (female1i)/(float) (female1i+male1i+other1i);
+                    float lowerstatsother = (float) (other1i)/(float) (female1i+male1i+other1i);
+                    float upperstatsmale = (float) (male0i)/(float) (female0i+male0i+other0i);
+                    float upperstatfesmale = (float) (female0i)/(float) (female0i+male0i+other0i);
+                    float upperstatsother = (float) (other0i)/(float) (female0i+male0i+other0i);
                     float lowerstats =(float)(male1i+female1i+other1i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
                     float upperstats =(float)(male0i+female0i+other0i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
 
@@ -1233,7 +1271,7 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
                 buttonPressed=1;
                 if(showstats==0) {
-                    globalI=nextQuestion(bigTable.get(0));
+                    globalI=nextQuestion(max);
 
                     questionsTillAd--;
                     if(questionsTillAd<0){
@@ -1242,13 +1280,29 @@ public class MainActivity extends AppCompatActivity {
                         }
                         questionsTillAd=20;
                     }
+                    /*
+                    max=0;
+                    if(isDefault){
+                        max+=defaultQuestionsCount;
+                    }
+                    if(isFunny){
+                        max+=funnyQuestionsCount;
+                    }
+                    if(isGrose){
+                        max+=groseQuestionsCount;
+                    }
+                    if(isDisturbing){
+                        max+=disturbingQuestionsCount;
+                    }
+                    */
+                    System.out.println("max "+max);
 
                     while(true){
                         String category = bigTable.get(2).get(globalI);
                         if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
                             break;
                         }else{
-                            globalI=nextQuestion(bigTable.get(0));
+                            globalI=nextQuestion(max);
                         }
                     }
                     System.out.println("category "+bigTable.get(2).get(globalI));
@@ -1267,7 +1321,6 @@ public class MainActivity extends AppCompatActivity {
                     GetStats gs = new GetStats();
                     gs.execute(new String[] {getStatsUrl});
 
-
                         String[] qst = bigTable.get(1).get(globalI).split("@", 2);
                         lowerText.setText(qst[1]);
                         upperText.setText(qst[0]);
@@ -1279,20 +1332,26 @@ public class MainActivity extends AppCompatActivity {
                     showstats=1;
                 }else{
 
-                    int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
-                    male0i =(male0.get(globalI));
+                    int male0i = 0,female0i ,other0i ,male1i ,female1i ,other1i;
+                    try{
+                        male0i =(male0.get(globalI));
+                    }catch (IndexOutOfBoundsException e){
+                        globalI=0;
+                        male0i =(male0.get(globalI));
+                    }
+
                     female0i=(female0.get(globalI));
                     other0i = (other0.get(globalI));
                     male1i=(male1.get(globalI));
                     female1i=(female1.get(globalI));
                     other1i=(other1.get(globalI));
 
-                    float lowerstatsmale = (float) (male1i)/(float) (male0i+male1i);
-                    float lowerstatfesmale = (float) (female1i)/(float) (female0i+female1i);
-                    float lowerstatsother = (float) (other1i)/(float) (other1i+other0i);
-                    float upperstatsmale = (float) (male0i)/(float) (male0i+male1i);
-                    float upperstatfesmale = (float) (female0i)/(float) (female0i+female1i);
-                    float upperstatsother = (float) (other0i)/(float) (other0i+other1i);
+                    float lowerstatsmale = (float) (male1i)/(float) (female1i+male1i+other1i);
+                    float lowerstatfesmale = (float) (female1i)/(float) (female1i+male1i+other1i);
+                    float lowerstatsother = (float) (other1i)/(float) (female1i+male1i+other1i);
+                    float upperstatsmale = (float) (male0i)/(float) (female0i+male0i+other0i);
+                    float upperstatfesmale = (float) (female0i)/(float) (female0i+male0i+other0i);
+                    float upperstatsother = (float) (other0i)/(float) (female0i+male0i+other0i);
                     float lowerstats =(float)(male1i+female1i+other1i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
                     float upperstats =(float)(male0i+female0i+other0i)/(float)(male0i+female0i+other0i+male1i+female1i+other1i);
                     //System.out.println("lowerstats "+lowerstats);

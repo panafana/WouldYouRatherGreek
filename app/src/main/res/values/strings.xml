@@ -36,8 +36,8 @@
     <string-array name="categories">
         <item>Γενικές</item>
         <item>Αστείες</item>
-        <item>Ανησυχητικές</item>
-        <item>Αηδιαστικές</item>
+       <!-- <item>Ανησυχητικές</item>
+        <item>Αηδιαστικές</item>-->
     </string-array>
 
     <string name="title_activity_test">test</string>
