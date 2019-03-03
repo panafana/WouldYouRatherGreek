@@ -700,6 +700,9 @@ public class MainActivityCompatibility extends AppCompatActivity {
 
         or.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
+                if(event.getPointerCount()>1){
+                    or.setVisibility(View.VISIBLE);
+                }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     //do something when pressed down
                     //Log.d("or", "or clicked");
@@ -726,6 +729,9 @@ public class MainActivityCompatibility extends AppCompatActivity {
         shareImage.setOnTouchListener((view, motionEvent) -> {
             //do something when pressed down
             //Log.d("or", "or clicked");
+            if(motionEvent.getPointerCount()>1){
+                shareImage.setVisibility(View.VISIBLE);
+            }
             float x2,y2;
             if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 //do something when pressed down
@@ -795,7 +801,9 @@ public class MainActivityCompatibility extends AppCompatActivity {
         commentImage.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-
+                if(motionEvent.getPointerCount()>1){
+                    commentImage.setVisibility(View.VISIBLE);
+                }
                 //do something when pressed down
                 //Log.d("or", "or clicked");
                 float x2,y2;
@@ -857,6 +865,9 @@ public class MainActivityCompatibility extends AppCompatActivity {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent2) {
                 float x2,y2;
+                if(motionEvent2.getPointerCount()>1){
+                    upperImage.setVisibility(View.VISIBLE);
+                }
                 if(motionEvent2.getAction() == MotionEvent.ACTION_DOWN){
                     //do something when pressed down
                     //Log.d("or", "or clicked");
@@ -905,6 +916,9 @@ public class MainActivityCompatibility extends AppCompatActivity {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 float x2=0,y2=0;
+                if(motionEvent.getPointerCount()>1){
+                    lowerImage.setVisibility(View.VISIBLE);
+                }
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                     //do something when pressed down
                     //Log.d("or", "or clicked");

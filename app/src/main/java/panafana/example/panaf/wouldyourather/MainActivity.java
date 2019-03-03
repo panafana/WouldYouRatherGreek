@@ -836,6 +836,10 @@ public class MainActivity extends AppCompatActivity {
 
         or.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
+
+                if(event.getPointerCount()>1){
+                    or.setVisibility(View.VISIBLE);
+                }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     //do something when pressed down
                     //Log.d("or", "or clicked");
@@ -862,6 +866,9 @@ public class MainActivity extends AppCompatActivity {
         shareImage.setOnTouchListener((view, motionEvent) -> {
                 //do something when pressed down
                 //Log.d("or", "or clicked");
+            if(motionEvent.getPointerCount()>1){
+                shareImage.setVisibility(View.VISIBLE);
+            }
                 float x2,y2;
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                     //do something when pressed down
@@ -931,7 +938,9 @@ public class MainActivity extends AppCompatActivity {
         commentImage.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-
+                if(motionEvent.getPointerCount()>1){
+                    commentImage.setVisibility(View.VISIBLE);
+                }
                     //do something when pressed down
                     //Log.d("or", "or clicked");
                     float x2,y2;
@@ -993,21 +1002,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent2) {
                 float x2,y2;
-                if(motionEvent2.getAction() == MotionEvent.ACTION_DOWN){
+                if(motionEvent2.getPointerCount()>1){
+                    upperImage.setVisibility(View.VISIBLE);
+                }
+                if(motionEvent2.getAction() == MotionEvent.ACTION_DOWN ){
                     //do something when pressed down
                     //Log.d("or", "or clicked");
 
-                    Handler handler = new Handler(Looper.getMainLooper());
-                    handler.post(() -> {
-                        // UI code goes here
-                        upperImage.setVisibility(View.INVISIBLE);
-                        upperImage2.setVisibility(View.VISIBLE);
-                    });
-                    //upperImage.setColorFilter(ctx.getResources().getColor(R.color.tint_blue),PorterDuff.Mode.MULTIPLY);
-                    xu=motionEvent2.getX();
-                    yu=motionEvent2.getY();
-                    return true;
-                }
+
+                        Handler handler = new Handler(Looper.getMainLooper());
+                        handler.post(() -> {
+                            // UI code goes here
+                            upperImage.setVisibility(View.INVISIBLE);
+                            upperImage2.setVisibility(View.VISIBLE);
+                        });
+                        //upperImage.setColorFilter(ctx.getResources().getColor(R.color.tint_blue),PorterDuff.Mode.MULTIPLY);
+                        xu = motionEvent2.getX();
+                        yu = motionEvent2.getY();
+                        return true;
+                    }
                 else if(motionEvent2.getAction() == MotionEvent.ACTION_UP ){
                     x2=motionEvent2.getX();
                     y2=motionEvent2.getY();
@@ -1033,6 +1046,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     return true;
                 }
+
                 return false;
             }
         });
@@ -1041,6 +1055,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 float x2=0,y2=0;
+                if(motionEvent.getPointerCount()>1){
+                    lowerImage.setVisibility(View.VISIBLE);
+                }
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                     //do something when pressed down
                     //Log.d("or", "or clicked");
