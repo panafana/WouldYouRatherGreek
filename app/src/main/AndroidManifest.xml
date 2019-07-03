@@ -27,7 +27,8 @@
 
         <activity
             android:name=".LoginActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,16 +38,22 @@
         <activity
             android:name=".MainActivity"
             android:hardwareAccelerated="true"
-            android:label="@string/action_bar" />
+            android:label="@string/action_bar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".RegisterActivity"
-            android:label="@string/title_activity_register" />
-        <activity android:name=".SelectGender" />
-        <activity android:name=".SubmitQuestion" />
+            android:label="@string/title_activity_register"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".SelectGender"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".SubmitQuestion"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".Comments"
-            android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".MainActivityCompatibility"></activity>
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".MainActivityCompatibility"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>
