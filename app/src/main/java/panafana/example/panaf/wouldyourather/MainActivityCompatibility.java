@@ -37,6 +37,7 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -103,6 +104,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
     int groseQuestionsCount=0;
     int max;
     MenuItem submenuCategories;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -113,6 +115,11 @@ public class MainActivityCompatibility extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //MobileAds.initialize(this,"ca-app-pub-2471480338929808~1664063554");
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.LEVEL, "main");
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LEVEL_START, bundle);
 
         mInterstitialAd = new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-2471480338929808/6440025315");
@@ -777,6 +784,8 @@ public class MainActivityCompatibility extends AppCompatActivity {
         });
 
         shareImage.setOnClickListener(view -> {
+            Bundle bundle = new Bundle();
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE, bundle);
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
             Bitmap bm = screenShot(getWindow().getDecorView().findViewById(android.R.id.content));

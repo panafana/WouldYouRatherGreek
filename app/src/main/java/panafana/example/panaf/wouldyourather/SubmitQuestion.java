@@ -24,15 +24,21 @@ import java.net.URL;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 public class SubmitQuestion extends AppCompatActivity {
     Context ctx = this;
     String result1;
+    private FirebaseAnalytics mFirebaseAnalytics;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submit_question);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
         final EditText qst = findViewById(R.id.question);
         final EditText qst2 = findViewById(R.id.question2);
         Button submit = findViewById(R.id.submit);
@@ -115,6 +121,9 @@ public class SubmitQuestion extends AppCompatActivity {
         @Override
         protected void onPostExecute(final String success) {
             if (success.equals("Success")) {
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "submit question");
+                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.POST_SCORE, bundle);
                 finish();
             } else {
                 Toast.makeText(ctx, "Error", Toast.LENGTH_LONG).show();

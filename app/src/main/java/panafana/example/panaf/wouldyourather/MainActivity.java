@@ -39,6 +39,7 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -79,6 +80,7 @@ import static java.lang.Math.round;
 //import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity {
+    private FirebaseAnalytics mFirebaseAnalytics;
     SharedPreferences SP;
     SharedPreferences SP2;
     Context ctx = this;
@@ -119,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         Toolbar toolbar = findViewById(R.id.toolbar);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //MobileAds.initialize(this,"ca-app-pub-2471480338929808~1664063554");
@@ -137,7 +139,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.LEVEL, "main");
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LEVEL_START, bundle);
 
         mAdView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -913,6 +917,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         shareImage.setOnClickListener(view -> {
+            Bundle bundle = new Bundle();
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE, bundle);
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
             Bitmap bm = screenShot(getWindow().getDecorView().findViewById(android.R.id.content));

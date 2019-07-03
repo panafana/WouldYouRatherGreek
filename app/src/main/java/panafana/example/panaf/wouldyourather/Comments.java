@@ -35,6 +35,8 @@ import java.util.Date;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 public class Comments extends AppCompatActivity {
     private String submitCommentUrl ="http://83.212.84.230/submitcomment.php";
     private String commentsUrl ="http://83.212.84.230/getcomments.php";
@@ -42,6 +44,7 @@ public class Comments extends AppCompatActivity {
     MyListAdapter adapter;
     ListView listView;
     Context ctx;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,8 @@ public class Comments extends AppCompatActivity {
         setSupportActionBar(toolbar);
         Button submit = findViewById(R.id.comment_submit);
         EditText comment = findViewById(R.id.comment);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
         listView = findViewById(R.id.listView1);
         jsonCommentResult = getIntent().getStringExtra("comments");
         int question =getIntent().getIntExtra("question",0);
@@ -193,7 +198,9 @@ public class Comments extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "submit comment");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.POST_SCORE, bundle);
         }
     }
 
