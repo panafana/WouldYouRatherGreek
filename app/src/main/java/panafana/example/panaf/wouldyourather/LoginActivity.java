@@ -27,9 +27,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -42,6 +39,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 /**
  * A login screen that offers login via email/password.
@@ -64,6 +66,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     // UI references.
     private AutoCompleteTextView usernameView;
@@ -78,6 +81,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         setContentView(R.layout.activity_login);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        Bundle bundle = new Bundle();
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.APP_OPEN, bundle);
         //toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
         // Set up the login form.
         usernameView = (AutoCompleteTextView) findViewById(R.id.username);
@@ -385,6 +391,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     SPE.commit();
                     Log.d("gender","other");
                 }
+
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, musername);
+                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
 
                 if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
 
