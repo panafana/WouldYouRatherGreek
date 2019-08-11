@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "229496007481",
+    "firebase_url": "https://would-you-7a706.firebaseio.com",
+    "project_id": "would-you-7a706",
+    "storage_bucket": "would-you-7a706.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:229496007481:android:b6555840b45668bb",
+        "android_client_info": {
+          "package_name": "panafana.example.panaf.wouldyourather"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "229496007481-j9a26d2s37s17tvo52jbqe1o2rk8c6fm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "panafana.example.panaf.wouldyourather",
+            "certificate_hash": "acf488cb6e6257f95c0198b8eb4658328b77a3a3"
+          }
+        },
+        {
+          "client_id": "229496007481-afg9bt7nve7lo5ej1o44qru9pevm4dfc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3HC7MNA9_Q8MWD08ENUTc5pFMqqCWEzs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "229496007481-afg9bt7nve7lo5ej1o44qru9pevm4dfc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-2471480338929808~1664063554"
+    }
+  ],
+  "configuration_version": "1"
+}

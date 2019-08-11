@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="panafana.example.panaf.wouldyourather">
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
@@ -17,7 +18,8 @@
         android:roundIcon="@mipmap/roundicon1"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:ignore="GoogleAppIndexingWarning">
 
         <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
         <meta-data
@@ -52,8 +54,9 @@
             android:name=".Comments"
             android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait"/>
-        <activity android:name=".MainActivityCompatibility"
-            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".MainActivityCompatibility"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

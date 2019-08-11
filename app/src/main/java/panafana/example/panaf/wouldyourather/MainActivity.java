@@ -32,6 +32,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.core.widget.TextViewCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -62,16 +72,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
-import androidx.core.widget.TextViewCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
     int funnyQuestionsCount=0;
     int disturbingQuestionsCount=0;
     int groseQuestionsCount=0;
+    int couplesQuestionsCount=0;
     int max;
 
 
@@ -209,12 +210,9 @@ public class MainActivity extends AppCompatActivity {
                         }else if(id<10){
 
 
-
                         }
-
                         // Add code here to update the UI based on the item selected
                         // For example, swap UI fragments here
-
                         return true;
 
                     }
@@ -257,9 +255,12 @@ public class MainActivity extends AppCompatActivity {
                             case "Αηδιαστικές": isGrose=false;
                                 resetGameState();
                                 break;
+                            case "Για ζευγάρια": isCouples=false;
+                                resetGameState();
+                                break;
                         }
                         //menuItem.setChecked(false);
-                        if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose){
+                        if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
                             isDefault=true;
                             max=defaultQuestionsCount;
                             submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
@@ -269,6 +270,8 @@ public class MainActivity extends AppCompatActivity {
                         System.out.println("funny "+isFunny);
                         System.out.println("disturbing "+isDisturbing);
                         System.out.println("grose "+isGrose);
+                        System.out.println("couples "+isCouples);
+
                     }else{
 
                         menuItem.setIcon(R.drawable.ic_check_box_black_24dp);
@@ -285,12 +288,16 @@ public class MainActivity extends AppCompatActivity {
                             case "Αηδιαστικές": isGrose=true;
                                 resetGameState();
                                 break;
+                            case "Για ζευγάρια": isCouples=true;
+                                resetGameState();
+                                break;
                         }
                         System.out.println("max "+max);
                         System.out.println("default "+isDefault);
                         System.out.println("funny "+isFunny);
                         System.out.println("disturbing "+isDisturbing);
                         System.out.println("grose "+isGrose);
+                        System.out.println("couples "+isCouples);
                         //menuItem.setChecked(true);
                     }
                     return false;
@@ -351,14 +358,11 @@ public class MainActivity extends AppCompatActivity {
         String json = SP.getString(key, null);
         Type type = new TypeToken<ArrayList<Integer>>() {}.getType();
         ArrayList<Integer>  set = gson.fromJson(json, type);
-
         return set;
 
     }
 
     int nextQuestion(int maxQ){
-
-        int counter=0;
         Gson gson = new Gson();
         String json = SP2.getString("usedIds", null);
         Type type = new TypeToken<ArrayList<String>>() {
@@ -367,9 +371,24 @@ public class MainActivity extends AppCompatActivity {
 
         final int min = 0;
         final int maxi = maxQ;
-        int random = new Random().nextInt((maxi - min) + 1) + min;
+        int random=0 ;
+        try{
+            random  = new Random().nextInt((maxi - min) + 1) + min;
+
+        }catch (IllegalArgumentException e){
+            random=0;
+        }
+
         System.out.println("random value "+random);
         if(json==null){
+            ArrayList<String> set2 = new ArrayList<>();
+            set2.add(String.valueOf(random));
+            Gson gson1 = new Gson();
+            String json1 = gson1.toJson(set2);
+            SharedPreferences.Editor editor = SP2.edit();
+            editor.putString("usedIds",json1);
+            editor.apply();
+            editor.commit();
             return random;
         }
 
@@ -377,8 +396,7 @@ public class MainActivity extends AppCompatActivity {
             random = new Random().nextInt((maxi - min) + 1) + min;
             System.out.println("random value "+random);
 
-            counter++;
-            if(counter>maxi){
+            if(set.size()>maxi){
                 Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
                 resetGameState();
                 break;
@@ -386,19 +404,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         set.add(String.valueOf(random));
+        for(int i=0;i<set.size();i++){
+            System.out.println("UsedQ "+set.get(i));
+        }
 
         Gson gson1 = new Gson();
         String json1 = gson1.toJson(set);
-
-
         SharedPreferences.Editor editor = SP2.edit();
         editor.putString("usedIds",json1);
         editor.apply();
         editor.commit();
-
         return random;
-
-
     }
 
     // Async Task to access the web
@@ -789,6 +805,8 @@ public class MainActivity extends AppCompatActivity {
                 disturbingQuestionsCount++;
             }else if(bigTable.get(2).get(i).equals("grose")){
                 groseQuestionsCount++;
+            }else if(bigTable.get(2).get(i).equals("couples")){
+                couplesQuestionsCount++;
             }
         }
 
@@ -796,6 +814,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("funny questions "+funnyQuestionsCount);
         System.out.println("disturbing questions "+disturbingQuestionsCount);
         System.out.println("grose questions "+groseQuestionsCount);
+        System.out.println("couples questions "+couplesQuestionsCount);
 
 
 
@@ -807,13 +826,13 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
         final float coeff = 100f*(1f/questions.size());
-        max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount-1;
+        max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount+couplesQuestionsCount-1;
 
 
         globalI=nextQuestion(max);
         while(true){
             String category = bigTable.get(2).get(globalI);
-            if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
+            if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                 break;
             }else{
                 globalI=nextQuestion(max);
@@ -1146,7 +1165,7 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("max "+max);
                     while(true){
                         String category = bigTable.get(2).get(globalI);
-                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
+                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                             break;
                         }else{
                             globalI=nextQuestion(max);
@@ -1316,7 +1335,7 @@ public class MainActivity extends AppCompatActivity {
 
                     while(true){
                         String category = bigTable.get(2).get(globalI);
-                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
+                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                             break;
                         }else{
                             globalI=nextQuestion(max);
@@ -1349,7 +1368,7 @@ public class MainActivity extends AppCompatActivity {
                     showstats=1;
                 }else{
 
-                    int male0i = 0,female0i ,other0i ,male1i ,female1i ,other1i;
+                    int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
                     try{
                         male0i =(male0.get(globalI));
                     }catch (IndexOutOfBoundsException e){

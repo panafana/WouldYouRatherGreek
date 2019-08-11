@@ -36,6 +36,9 @@
     <string-array name="categories">
         <item>Γενικές</item>
         <item>Αστείες</item>
+        <item>Δύσκολες</item>
+        <item>Για ζευγάρια</item>
+        <item>Αηδιαστικές</item>
        <!-- <item>Ανησυχητικές</item>
         <item>Αηδιαστικές</item>-->
     </string-array>

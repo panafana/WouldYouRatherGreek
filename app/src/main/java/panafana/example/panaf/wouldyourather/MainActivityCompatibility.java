@@ -33,6 +33,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
+
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -60,14 +68,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.widget.TextViewCompat;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
@@ -101,6 +101,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
     int funnyQuestionsCount=0;
     int disturbingQuestionsCount=0;
     int groseQuestionsCount=0;
+    int couplesQuestionsCount=0;
     int max;
     MenuItem submenuCategories;
 
@@ -204,8 +205,6 @@ public class MainActivityCompatibility extends AppCompatActivity {
     }
 
     int nextQuestion(int maxQ){
-
-        int counter=0;
         Gson gson = new Gson();
         String json = SP2.getString("usedIds", null);
         Type type = new TypeToken<ArrayList<String>>() {
@@ -214,9 +213,23 @@ public class MainActivityCompatibility extends AppCompatActivity {
 
         final int min = 0;
         final int maxi = maxQ;
-        int random = new Random().nextInt((maxi - min) + 1) + min;
+        int random=0 ;
+        try{
+            random  = new Random().nextInt((maxi - min) + 1) + min;
+
+        }catch (IllegalArgumentException e){
+            random=0;
+        }
         System.out.println("random value "+random);
         if(json==null){
+            ArrayList<String> set2 = new ArrayList<>();
+            set2.add(String.valueOf(random));
+            Gson gson1 = new Gson();
+            String json1 = gson1.toJson(set2);
+            SharedPreferences.Editor editor = SP2.edit();
+            editor.putString("usedIds",json1);
+            editor.apply();
+            editor.commit();
             return random;
         }
 
@@ -224,8 +237,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
             random = new Random().nextInt((maxi - min) + 1) + min;
             System.out.println("random value "+random);
 
-            counter++;
-            if(counter>maxi){
+            if(set.size()>maxi){
                 Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
                 resetGameState();
                 break;
@@ -233,18 +245,17 @@ public class MainActivityCompatibility extends AppCompatActivity {
         }
 
         set.add(String.valueOf(random));
+        for(int i=0;i<set.size();i++){
+            System.out.println("UsedQ "+set.get(i));
+        }
 
         Gson gson1 = new Gson();
         String json1 = gson1.toJson(set);
-
-
         SharedPreferences.Editor editor = SP2.edit();
         editor.putString("usedIds",json1);
         editor.apply();
         editor.commit();
-
         return random;
-
 
     }
 
@@ -653,6 +664,8 @@ public class MainActivityCompatibility extends AppCompatActivity {
                 disturbingQuestionsCount++;
             }else if(bigTable.get(2).get(i).equals("grose")){
                 groseQuestionsCount++;
+            }else if(bigTable.get(2).get(i).equals("couples")){
+                couplesQuestionsCount++;
             }
         }
 
@@ -660,7 +673,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
         System.out.println("funny questions "+funnyQuestionsCount);
         System.out.println("disturbing questions "+disturbingQuestionsCount);
         System.out.println("grose questions "+groseQuestionsCount);
-
+        System.out.println("couples questions "+couplesQuestionsCount);
 
 
         final int answerUpColor = getResources().getColor(R.color.answer_up_color);
@@ -671,13 +684,13 @@ public class MainActivityCompatibility extends AppCompatActivity {
 
         SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
         final float coeff = 100f*(1f/questions.size());
-        max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount-1;
+        max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount+couplesQuestionsCount-1;
 
 
         globalI=nextQuestion(max);
         while(true){
             String category = bigTable.get(2).get(globalI);
-            if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
+            if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                 break;
             }else{
                 globalI=nextQuestion(max);
@@ -1007,7 +1020,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
                     System.out.println("max "+max);
                     while(true){
                         String category = bigTable.get(2).get(globalI);
-                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
+                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                             break;
                         }else{
                             globalI=nextQuestion(max);
@@ -1174,7 +1187,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
 
                     while(true){
                         String category = bigTable.get(2).get(globalI);
-                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))){
+                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                             break;
                         }else{
                             globalI=nextQuestion(max);
@@ -1400,7 +1413,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        boolean[] isTable={isDefault,isFunny};
+        boolean[] isTable={isDefault,isFunny,isDisturbing,isCouples,isGrose};
         if (id == R.id.reset) {
             globalI = 0;
             SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
@@ -1431,6 +1444,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
             finish();
         }else if(item.getTitle().equals("Κατηγορίες ερωτήσεων")){
             String[] uniqueCategoriesArray = getResources().getStringArray(R.array.categories);
+            System.out.println("length" +uniqueCategoriesArray.length);
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Επιλογή κατηγορίας");
             builder.setMultiChoiceItems(uniqueCategoriesArray, isTable, new DialogInterface.OnMultiChoiceClickListener() {
@@ -1448,8 +1462,24 @@ public class MainActivityCompatibility extends AppCompatActivity {
                         }else{
                             isFunny=false;
                         }break;
+                        case 2:if(b) {
+                            isDisturbing = true;
+                        }else {
+                            isDisturbing = false;
+                        }break;
+                        case 3:if(b) {
+                            isCouples = true;
+                        }else {
+                            isCouples = false;
+                        }break;
+                        case 4:if(b) {
+                            isGrose = true;
+                        }else {
+                            isGrose = false;
+                        }break;
+
                     }
-                    if(!isDefault&&!isFunny){
+                    if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
                         isDefault=true;
                     }
                 }
