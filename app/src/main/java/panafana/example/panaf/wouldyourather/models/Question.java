@@ -7,10 +7,10 @@ public class Question {
     private String question;
     private String category;
     private String id;
-    private ArrayList<Stats> stats;
+    private Stats stats;
     private ArrayList<Comment> comments;
 
-    public Question(String question,String category, String id,ArrayList<Stats> stats,ArrayList<Comment> comments  ){
+    public Question(String question,String category, String id,Stats stats,ArrayList<Comment> comments  ){
             this.category = category;
             this.question = question;
             this.id = id;
@@ -25,7 +25,7 @@ public class Question {
 
     public String getId(){return id;}
 
-    public ArrayList<Stats> getStats(){return stats;}
+    public Stats getStats(){return stats;}
 
     public ArrayList<Comment> getComments(){return comments;}
 
@@ -35,7 +35,7 @@ public class Question {
 
     public void setId(String id){this.id = id;}
 
-    public void setStats(ArrayList<Stats> stats){this.stats = stats;}
+    public void setStats(Stats stats){this.stats = stats;}
 
     public void setComments(ArrayList<Comment> comments){this.comments = comments;}
 

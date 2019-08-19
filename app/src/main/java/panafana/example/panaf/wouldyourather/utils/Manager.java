@@ -5,18 +5,24 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.ContentHandler;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.ResponseBody;
 import panafana.example.panaf.wouldyourather.R;
+import panafana.example.panaf.wouldyourather.models.Comment;
+import panafana.example.panaf.wouldyourather.models.Question;
+import panafana.example.panaf.wouldyourather.models.Stats;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Retrofit;
@@ -32,7 +38,7 @@ public class Manager {
     public interface RetrofitInterface {
 
         @POST
-        Call<ResponseBody> getQuestions(@Url String fileUrl);
+        Call<ResponseBody> getQuestions(@Url String id);
 
         @GET("/android/get-animals")
         Call<ResponseBody> getAnimals();
@@ -43,12 +49,23 @@ public class Manager {
         final String serverUrl = context.getString(R.string.server_url);
         final Utils utils = new Utils();
         final SharedPreferences SP = context.getSharedPreferences("questions", MODE_PRIVATE);
+        final String temp = SP.getString("allquestions",null);
+        String id;
+        if(temp!=null){
+            Gson gson = new Gson();
+            Type type = new TypeToken<ArrayList<Question>>() {
+            }.getType();
+            ArrayList<Question> allquestions = gson.fromJson(temp, type);
+            id=allquestions.get(allquestions.size()-1).getId();
+        }else{
+            id = "000000000000000000000000";
+        }
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(serverUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         RetrofitInterface service=retrofit.create(RetrofitInterface.class);
-        Call<ResponseBody> call = service.getQuestions();
+        Call<ResponseBody> call = service.getQuestions(id);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
@@ -57,64 +74,50 @@ public class Manager {
                     try {
                         String resp =response.body().string();
                         System.out.println("resp "+resp);
+                        ArrayList<Question> allquestions;
+                        if(temp!=null){
+                            Gson gson = new Gson();
+                            Type type = new TypeToken<ArrayList<Question>>() {
+                            }.getType();
+                            allquestions = gson.fromJson(temp, type);
+                        }else{
+                            allquestions = new ArrayList<>();
+                        }
+                            JSONArray questions =new JSONArray(resp);
+                            for(int i = 0;i<questions.length();i++){
+                                String question = questions.getJSONObject(i).getString("question");
+                                String category = questions.getJSONObject(i).getString("category");
+                                String id = questions.getJSONObject(i).getString("_id");
+                                JSONObject stats = questions.getJSONObject(i).getJSONObject("stats");
+                                JSONArray comments = questions.getJSONObject(i).getJSONArray("comments");
 
-                        JSONArray categories =new JSONArray(resp);
-                        SharedPreferences.Editor editor = SP.edit();
-                        SharedPreferences.Editor editor2 = SP2.edit();
-                        ArrayList<Animal> allanimals = new ArrayList<>();
+                                int male0 = stats.getInt("male0");
+                                int male1 = stats.getInt("male1");
+                                int female0 = stats.getInt("female0");
+                                int female1 = stats.getInt("female1");
+                                int other0 = stats.getInt("other0");
+                                int other1 = stats.getInt("other1");
+                                Stats mystats = new Stats(male0,female0,other0,male1,female1,other1);
+                                ArrayList<Comment> mycomments = new ArrayList<>();
 
-                        ArrayList<Category> allcategories = new ArrayList<>();
-                        int size = categories.length();
-                        for(int i =0;i<size;i++){
-
-                            System.out.println("animals "+categories.getJSONObject(i).get("animals"));
-                            JSONArray animals =  categories.getJSONObject(i).getJSONArray("animals");
-                            ArrayList<Animal> categoryAnimals = new ArrayList<>();
-                            for(int j = 0;j<animals.length();j++){
-                                total_downloads++;
-                                System.out.println("animals "+animals.get(j));
-                                JSONArray jsonSounds = animals.getJSONObject(j).getJSONArray("sound");
-                                List<String> sounds = new ArrayList<>();
-                                for(int k=0;k<jsonSounds.length();k++){
-                                    sounds.add(jsonSounds.getString(k));
-                                    donwloadMp3(context,jsonSounds.getString(k));
+                                for(int k = 0;k<comments.length();k++){
+                                    String comment = comments.getJSONObject(k).getString("comment");
+                                    String date = comments.getJSONObject(k).getString("date");
+                                    String user = comments.getJSONObject(k).getString("user");
+                                    Comment com = new Comment(comment,date,user);
+                                    mycomments.add(com);
                                 }
-                                Animal animal = new Animal(animals.getJSONObject(j).getString("name"),
-                                        animals.getJSONObject(j).getString("image"),
-                                        sounds,
-                                        animals.getJSONObject(j).getString("category"));
-                                allanimals.add(animal);
-
-                                categoryAnimals.add(animal);
-                                //pre-caching images
-                                Picasso.get().load(serverUrl + "images/"+animal.getImage()).fetch();
+                                Question tempqst = new Question(question,category,id,mystats,mycomments);
+                                allquestions.add(tempqst);
 
                             }
-                            Category cat = new Category(categories.getJSONObject(i).getString("name"),categories.getJSONObject(i).getString("image"),categoryAnimals);
-                            allcategories.add(cat);
-                            //pre-caching images
-                            Picasso.get().load(serverUrl + "images/"+cat.getImage()).fetch();
-                            categoryAnimals.clear();
+                            SharedPreferences.Editor editor = SP.edit();
+                            Gson gson1 = new Gson();
+                            String json1 = gson1.toJson(allquestions);
+                            editor.putString("allquestions",json1);
+                            editor.apply();
 
-                        }
-                        Gson gson1 = new Gson();
-                        String json1 = gson1.toJson(allanimals);
-                        editor.putString("allanimals",json1);
-                        editor.apply();
-                        System.out.println("animal stored");
-                        Gson gson2 = new Gson();
-                        Category cat = new Category("All Animals","all.jpg",allanimals);
-                        allcategories.add(cat);
-                        Picasso.get().load(serverUrl + "images/"+cat.getImage()).fetch();
-                        String json2 = gson2.toJson(allcategories);
-                        editor2.putString("allcategories",json2);
-                        editor2.apply();
-                        System.out.println("categories stored");
 
-                        ((MainActivity)context).dataLoaded();
-
-                        SharedPreferences SP3 = context.getSharedPreferences("preferences", MODE_PRIVATE);
-                        SP3.edit().putBoolean("updated",true).apply();
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -129,7 +132,6 @@ public class Manager {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                super.onFailure(call,t);
                 Log.e("call",t.getMessage());
                 Log.e("animals received","failed");
 
