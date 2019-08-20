@@ -909,7 +909,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        or.setOnClickListener(view -> Log.d("or","clicked"));
+        or.setOnClickListener(view -> {
+
+            Log.d("or","clicked");
+            manager.updateStats(this,"5d5bba8d6be1113f5413f600",2);
+
+        });
 
         shareImage.setOnTouchListener((view, motionEvent) -> {
                 //do something when pressed down

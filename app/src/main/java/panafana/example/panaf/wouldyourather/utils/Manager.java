@@ -26,6 +26,7 @@ import panafana.example.panaf.wouldyourather.models.Question;
 import panafana.example.panaf.wouldyourather.models.Stats;
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
@@ -41,6 +42,9 @@ public class Manager {
 
         @POST("/android/get-questions")
         Call<ResponseBody> getQuestions(@Body JsonObject id);
+
+        @POST("/android/update-stats")
+        Call<ResponseBody> updateStats(@Body JsonObject obj);
 
         @GET("/android/get-animals")
         Call<ResponseBody> getAnimals();
@@ -175,6 +179,44 @@ public class Manager {
         });
 
     }
+
+    public void updateStats(final Context context,String id,int position) {
+        final String serverUrl = context.getString(R.string.server_url);
+        final Utils utils = new Utils();
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", id);
+        jsonObject.addProperty("position", position);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface service=retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = service.updateStats(jsonObject);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        Log.d("update stats",response.body().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("update stats","Success");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d("update stats","Error");
+            }
+        });
+
+
+
+    }
+
 
 
 }
