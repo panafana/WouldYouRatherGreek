@@ -121,6 +121,20 @@ public class Manager {
                         String json1 = gson1.toJson(allquestions);
                         editor.putString("allquestions",json1);
                         editor.apply();
+
+                        ArrayList<String> allcategories = new ArrayList<>();
+                        for(int i=0;i<allquestions.size();i++){
+                            String tempcat = allquestions.get(i).getCategory();
+                            if(!allcategories.contains(tempcat)){
+                                allcategories.add(tempcat);
+                            }
+                        }
+                        Log.e("cat",allcategories.get(0));
+                        Gson gson2 = new Gson();
+                        String json2 = gson2.toJson(allcategories);
+                        editor.putString("allcategories",json2);
+                        editor.apply();
+
                         for(int i=0;i<allquestions.size();i++){
                             Log.e("id",allquestions.get(i).getId());
                             Log.e("question",allquestions.get(i).getQuestion());
@@ -137,6 +151,7 @@ public class Manager {
                                 Log.e("date",coms.get(j).getDate());
                                 Log.e("user",coms.get(j).getUser());
                             }
+
                         }
 
 

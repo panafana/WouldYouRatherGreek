@@ -75,6 +75,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
 
+import panafana.example.panaf.wouldyourather.models.Question;
 import panafana.example.panaf.wouldyourather.utils.Manager;
 
 import static java.lang.Math.abs;
@@ -773,6 +774,23 @@ public class MainActivity extends AppCompatActivity {
         final ArrayList<String> questions = new ArrayList<>(set);
         ArrayList<String> categories = new ArrayList<>(set2);
         ArrayList<String> ids = new ArrayList<>(set3);
+
+
+        Gson gson5 = new Gson();
+        String json5 = SP.getString("allquestions", null);
+        Type type5 = new TypeToken<ArrayList<Question>>() {}.getType();
+        final ArrayList<Question>  allquestions = gson5.fromJson(json5, type5);
+
+
+
+        Gson gson6 = new Gson();
+        String json6 = SP.getString("allcategories", null);
+        Type type6 = new TypeToken<ArrayList<String>>() {}.getType();
+        final ArrayList<String>  allcategories = gson6.fromJson(json6, type6);
+
+//        for(int i=0;i<allcategories.size();i++){
+//            Log.e("category",allcategories.get(i));
+//        }
 
         final ImageView upperImage = findViewById(R.id.upperImage);
         final ImageView lowerImage = findViewById(R.id.lowerImage);
