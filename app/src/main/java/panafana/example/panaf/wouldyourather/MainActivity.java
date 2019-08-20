@@ -75,6 +75,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
 
+import panafana.example.panaf.wouldyourather.utils.Manager;
+
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
 
@@ -116,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
     int groseQuestionsCount=0;
     int couplesQuestionsCount=0;
     int max;
+    Manager manager;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -165,6 +168,9 @@ public class MainActivity extends AppCompatActivity {
         showstats = 1;
         SharedPreferences SP4 = getSharedPreferences("stats", MODE_PRIVATE);
         sanity = SP4.getFloat("sanity", 50.00f);
+
+        manager = new Manager();
+        manager.getQuestions(this);
 
          navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
@@ -409,9 +415,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         set.add(String.valueOf(random));
-        for(int i=0;i<set.size();i++){
-            System.out.println("UsedQ "+set.get(i));
-        }
+//        for(int i=0;i<set.size();i++){
+//            System.out.println("UsedQ "+set.get(i));
+//        }
 
         Gson gson1 = new Gson();
         String json1 = gson1.toJson(set);

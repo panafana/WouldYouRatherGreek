@@ -252,9 +252,9 @@ public class MainActivityCompatibility extends AppCompatActivity {
         }
 
         set.add(String.valueOf(random));
-        for(int i=0;i<set.size();i++){
-            System.out.println("UsedQ "+set.get(i));
-        }
+//        for(int i=0;i<set.size();i++){
+//            System.out.println("UsedQ "+set.get(i));
+//        }
 
         Gson gson1 = new Gson();
         String json1 = gson1.toJson(set);

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
 
@@ -27,6 +28,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Url;
@@ -37,8 +39,8 @@ public class Manager {
 
     public interface RetrofitInterface {
 
-        @POST
-        Call<ResponseBody> getQuestions(@Url String id);
+        @POST("/android/get-questions")
+        Call<ResponseBody> getQuestions(@Body JsonObject id);
 
         @GET("/android/get-animals")
         Call<ResponseBody> getAnimals();
@@ -60,17 +62,19 @@ public class Manager {
         }else{
             id = "000000000000000000000000";
         }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", id);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(serverUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         RetrofitInterface service=retrofit.create(RetrofitInterface.class);
-        Call<ResponseBody> call = service.getQuestions(id);
+        Call<ResponseBody> call = service.getQuestions(jsonObject);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
                 if (response.code() == 200) {
-                    Log.i("animals received","success");
+                    Log.e("questions received","success");
                     try {
                         String resp =response.body().string();
                         System.out.println("resp "+resp);
@@ -83,40 +87,57 @@ public class Manager {
                         }else{
                             allquestions = new ArrayList<>();
                         }
-                            JSONArray questions =new JSONArray(resp);
-                            for(int i = 0;i<questions.length();i++){
-                                String question = questions.getJSONObject(i).getString("question");
-                                String category = questions.getJSONObject(i).getString("category");
-                                String id = questions.getJSONObject(i).getString("_id");
-                                JSONObject stats = questions.getJSONObject(i).getJSONObject("stats");
-                                JSONArray comments = questions.getJSONObject(i).getJSONArray("comments");
 
-                                int male0 = stats.getInt("male0");
-                                int male1 = stats.getInt("male1");
-                                int female0 = stats.getInt("female0");
-                                int female1 = stats.getInt("female1");
-                                int other0 = stats.getInt("other0");
-                                int other1 = stats.getInt("other1");
-                                Stats mystats = new Stats(male0,female0,other0,male1,female1,other1);
-                                ArrayList<Comment> mycomments = new ArrayList<>();
+                        JSONArray questions =new JSONArray(resp);
+                        for(int i = 0;i<questions.length();i++){
+                            String question = questions.getJSONObject(i).getString("question");
+                            String category = questions.getJSONObject(i).getString("category");
+                            String id = questions.getJSONObject(i).getString("_id");
+                            JSONArray stats = questions.getJSONObject(i).getJSONArray("stats");
+                            JSONArray comments = questions.getJSONObject(i).getJSONArray("comments");
 
-                                for(int k = 0;k<comments.length();k++){
-                                    String comment = comments.getJSONObject(k).getString("comment");
-                                    String date = comments.getJSONObject(k).getString("date");
-                                    String user = comments.getJSONObject(k).getString("user");
-                                    Comment com = new Comment(comment,date,user);
-                                    mycomments.add(com);
-                                }
-                                Question tempqst = new Question(question,category,id,mystats,mycomments);
-                                allquestions.add(tempqst);
+                            int male0 = stats.getInt(0);
+                            int male1 = stats.getInt(3);
+                            int female0 = stats.getInt(1);
+                            int female1 = stats.getInt(4);
+                            int other0 = stats.getInt(2);
+                            int other1 = stats.getInt(5);
+                            Stats mystats = new Stats(male0,female0,other0,male1,female1,other1);
+                            ArrayList<Comment> mycomments = new ArrayList<>();
 
+                            for(int k = 0;k<comments.length();k++){
+                                String comment = comments.getJSONObject(k).getString("comment");
+                                String date = comments.getJSONObject(k).getString("date");
+                                String user = comments.getJSONObject(k).getString("user");
+                                Comment com = new Comment(comment,date,user);
+                                mycomments.add(com);
                             }
-                            SharedPreferences.Editor editor = SP.edit();
-                            Gson gson1 = new Gson();
-                            String json1 = gson1.toJson(allquestions);
-                            editor.putString("allquestions",json1);
-                            editor.apply();
+                            Question tempqst = new Question(question,category,id,mystats,mycomments);
+                            allquestions.add(tempqst);
 
+                        }
+                        SharedPreferences.Editor editor = SP.edit();
+                        Gson gson1 = new Gson();
+                        String json1 = gson1.toJson(allquestions);
+                        editor.putString("allquestions",json1);
+                        editor.apply();
+                        for(int i=0;i<allquestions.size();i++){
+                            Log.e("id",allquestions.get(i).getId());
+                            Log.e("question",allquestions.get(i).getQuestion());
+                            Log.e("category",allquestions.get(i).getCategory());
+                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getMale0()));
+                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getFemale0()));
+                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getOther0()));
+                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getMale1()));
+                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getFemale1()));
+                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getOther1()));
+                            ArrayList<Comment> coms = allquestions.get(i).getComments();
+                            for(int j=0;j<coms.size();j++){
+                                Log.e("comment",coms.get(j).getComment());
+                                Log.e("date",coms.get(j).getDate());
+                                Log.e("user",coms.get(j).getUser());
+                            }
+                        }
 
 
                     } catch (JSONException e) {
@@ -126,14 +147,14 @@ public class Manager {
                     }
                 }
                 else {
-                    Log.e("animals received","failed");
+                    Log.e("questions received","failed");
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e("call",t.getMessage());
-                Log.e("animals received","failed");
+                Log.e("questions received","failed");
 
             }
         });
