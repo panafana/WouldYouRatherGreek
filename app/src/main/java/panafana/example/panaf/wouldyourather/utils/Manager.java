@@ -7,7 +7,6 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,9 +14,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.ContentHandler;
 import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.ResponseBody;
 import panafana.example.panaf.wouldyourather.R;
@@ -32,7 +29,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
-import retrofit2.http.Url;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -51,6 +47,9 @@ public class Manager {
 
         @POST("/android/get-all-stats")
         Call<ResponseBody> getAllStats();
+
+        @POST("/android/submit-comment")
+        Call<ResponseBody> submitComment(@Body JsonObject obj);
 
         @GET("/android/get-animals")
         Call<ResponseBody> getAnimals();
@@ -355,14 +354,52 @@ public class Manager {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+
                 Log.d("getAll stats","Error");
             }
         });
 
-
-
     }
 
+    public void submitComment(final Context context,Comment comment,String id) {
+        final String serverUrl = context.getString(R.string.server_url);
+        final Utils utils = new Utils();
+        String com = comment.getComment();
+        String user = comment.getUser();
+        String date = comment.getDate();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", id);
+        jsonObject.addProperty("comment",com);
+        jsonObject.addProperty("user",user);
+        jsonObject.addProperty("date",date);
 
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface service = retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = service.submitComment(jsonObject);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        String responsestr = response.body().string();
+
+                        Log.d("submint comment  stats", "Success");
+                        Log.d("submint comment  stats", responsestr);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d("submint comment  stats","Error");
+            }
+        });
+
+    }
 
 }

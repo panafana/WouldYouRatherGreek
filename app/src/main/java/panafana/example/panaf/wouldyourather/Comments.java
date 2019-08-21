@@ -13,6 +13,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,10 +37,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import com.google.firebase.analytics.FirebaseAnalytics;
+import panafana.example.panaf.wouldyourather.models.Comment;
+import panafana.example.panaf.wouldyourather.utils.Manager;
 
 public class Comments extends AppCompatActivity {
     private String submitCommentUrl ="http://83.212.84.230/submitcomment.php";
@@ -71,6 +74,15 @@ public class Comments extends AppCompatActivity {
                     GetComments gc = new GetComments();
                     gc.execute(new String[] {commentsUrl,Integer.toString(question)});
                     comment.setText("");
+                    Manager manager = new Manager();
+                    String user;
+                    SharedPreferences SP =getSharedPreferences("user",MODE_PRIVATE);
+                    if(SP.contains("username")){
+                        user = SP.getString("username","noone");
+                    }else{
+                        user= "test";
+                    }
+                    manager.submitComment(getApplicationContext(),new Comment(cmt,"today",user),"5d5d7f32009ccd26b41336e3");
                 }
 
             }
