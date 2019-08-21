@@ -46,12 +46,18 @@ public class Manager {
         @POST("/android/update-stats")
         Call<ResponseBody> updateStats(@Body JsonObject obj);
 
+        @POST("/android/get-stats")
+        Call<ResponseBody> getStats(@Body JsonObject obj);
+
+        @POST("/android/get-all-stats")
+        Call<ResponseBody> getAllStats();
+
         @GET("/android/get-animals")
         Call<ResponseBody> getAnimals();
     }
 
 
-    public void getQuestions(final Context context){
+    public void getQuestions(final Context context,boolean getStats){
         final String serverUrl = context.getString(R.string.server_url);
         final Utils utils = new Utils();
         final SharedPreferences SP = context.getSharedPreferences("questions", MODE_PRIVATE);
@@ -139,25 +145,29 @@ public class Manager {
                         editor.putString("allcategories",json2);
                         editor.apply();
 
-                        for(int i=0;i<allquestions.size();i++){
-                            Log.e("id",allquestions.get(i).getId());
-                            Log.e("question",allquestions.get(i).getQuestion());
-                            Log.e("category",allquestions.get(i).getCategory());
-                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getMale0()));
-                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getFemale0()));
-                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getOther0()));
-                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getMale1()));
-                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getFemale1()));
-                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getOther1()));
-                            ArrayList<Comment> coms = allquestions.get(i).getComments();
-                            for(int j=0;j<coms.size();j++){
-                                Log.e("comment",coms.get(j).getComment());
-                                Log.e("date",coms.get(j).getDate());
-                                Log.e("user",coms.get(j).getUser());
-                            }
+//                        for(int i=0;i<allquestions.size();i++){
+//                            Log.e("id",allquestions.get(i).getId());
+//                            Log.e("question",allquestions.get(i).getQuestion());
+//                            Log.e("category",allquestions.get(i).getCategory());
+//                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getMale0()));
+//                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getFemale0()));
+//                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getOther0()));
+//                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getMale1()));
+//                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getFemale1()));
+//                            Log.e("stats", String.valueOf(allquestions.get(i).getStats().getOther1()));
+//                            ArrayList<Comment> coms = allquestions.get(i).getComments();
+//                            for(int j=0;j<coms.size();j++){
+//                                Log.e("comment",coms.get(j).getComment());
+//                                Log.e("date",coms.get(j).getDate());
+//                                Log.e("user",coms.get(j).getUser());
+//                            }
+//
+//                        }
 
+                        if(getStats){
+                            Manager manager = new Manager();
+                            manager.getAllStats(context);
                         }
-
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -210,6 +220,142 @@ public class Manager {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.d("update stats","Error");
+            }
+        });
+
+
+
+    }
+
+    public void getStats(final Context context,String id) {
+        final String serverUrl = context.getString(R.string.server_url);
+        final Utils utils = new Utils();
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", id);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface service=retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = service.getStats(jsonObject);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        String responsestr = response.body().string();
+                        Log.d("get stats",responsestr);
+
+                        JSONObject new_stats = new JSONObject(responsestr);
+
+                        System.out.println("new "+new_stats);
+                        JSONArray array = new_stats.getJSONArray("stats");
+
+                        final SharedPreferences SP = context.getSharedPreferences("questions", MODE_PRIVATE);
+                        final String temp = SP.getString("allquestions",null);
+                        Gson gson = new Gson();
+                        Type type = new TypeToken<ArrayList<Question>>() {
+                        }.getType();
+                        ArrayList<Question> allquestions = gson.fromJson(temp, type);
+                        int size = allquestions.size();
+                        for(int i = 0; i<size;i++){
+                            if(allquestions.get(i).getId().equals(id)){
+                                allquestions.get(i).setStats(new Stats(array.optInt(0),array.optInt(1),array.optInt(2),array.optInt(3),array.optInt(4),array.optInt(5)));
+                                break;
+                            }
+                        }
+                        SharedPreferences.Editor editor = SP.edit();
+                        Gson gson1 = new Gson();
+                        String json1 = gson1.toJson(allquestions);
+                        editor.putString("allquestions",json1);
+                        editor.apply();
+                        Log.d("stats","updated");
+
+
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("get stats", String.valueOf(response.code()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d("get stats","Error");
+            }
+        });
+
+
+
+    }
+
+    public void getAllStats(final Context context) {
+        final String serverUrl = context.getString(R.string.server_url);
+        final Utils utils = new Utils();
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface service=retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = service.getAllStats();
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        String responsestr = response.body().string();
+                        Log.d("getAll stats",response.body().string());
+
+                        JSONArray new_stats = new JSONArray(responsestr);
+
+                        System.out.println("new "+new_stats);
+
+
+                        final SharedPreferences SP = context.getSharedPreferences("questions", MODE_PRIVATE);
+                        final String temp = SP.getString("allquestions",null);
+                        Gson gson = new Gson();
+                        Type type = new TypeToken<ArrayList<Question>>() {
+                        }.getType();
+                        ArrayList<Question> allquestions = gson.fromJson(temp, type);
+                        int size = allquestions.size();
+                        if(size==new_stats.length()){
+                            for(int i = 0; i<size;i++){
+                                JSONArray stats_array = new_stats.getJSONObject(i).getJSONArray("stats");
+                                allquestions.get(i).setStats(new Stats(stats_array.optInt(0),stats_array.optInt(1),stats_array.optInt(2),stats_array.optInt(3),stats_array.optInt(4),stats_array.optInt(5)));
+
+                            }
+                        }else{
+                            Manager manager = new Manager();
+                            manager.getQuestions(context,true);
+                        }
+                        SharedPreferences.Editor editor = SP.edit();
+                        Gson gson1 = new Gson();
+                        String json1 = gson1.toJson(allquestions);
+                        editor.putString("allquestions",json1);
+                        editor.apply();
+                        Log.d("all stats","updated");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.d("getAll stats", String.valueOf(response.code()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d("getAll stats","Error");
             }
         });
 

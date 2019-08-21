@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         sanity = SP4.getFloat("sanity", 50.00f);
 
         manager = new Manager();
-        manager.getQuestions(this);
+        manager.getQuestions(this,false);
 
          navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
@@ -912,7 +912,24 @@ public class MainActivity extends AppCompatActivity {
         or.setOnClickListener(view -> {
 
             Log.d("or","clicked");
-            manager.updateStats(this,"5d5bba8d6be1113f5413f600",2);
+            //manager.updateStats(this,"5d5bba8d6be1113f5413f601",0);
+            manager.getAllStats(this);
+            //manager.getStats(this,"5d5bba8d6be1113f5413f600");
+            final SharedPreferences SP = getSharedPreferences("questions", MODE_PRIVATE);
+            final String temp = SP.getString("allquestions",null);
+            Gson gson33 = new Gson();
+            Type type33 = new TypeToken<ArrayList<Question>>() {
+            }.getType();
+            ArrayList<Question> allquestions2 = gson33.fromJson(temp, type33);
+            int size = allquestions2.size();
+            for(int i = 0; i<size;i++) {
+                System.out.println("stats "+allquestions2.get(i).getStats().getMale0()+" "
+                        +allquestions2.get(i).getStats().getFemale0()+" "
+                        +allquestions2.get(i).getStats().getOther0()+" "
+                        +allquestions2.get(i).getStats().getMale1()+" "
+                        +allquestions2.get(i).getStats().getFemale1()+" "
+                        +allquestions2.get(i).getStats().getOther1());
+            }
 
         });
 
