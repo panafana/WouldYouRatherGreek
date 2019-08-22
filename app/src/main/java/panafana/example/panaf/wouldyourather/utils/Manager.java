@@ -17,6 +17,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import okhttp3.ResponseBody;
+import panafana.example.panaf.wouldyourather.MainActivity;
 import panafana.example.panaf.wouldyourather.R;
 import panafana.example.panaf.wouldyourather.models.Comment;
 import panafana.example.panaf.wouldyourather.models.Question;
@@ -164,9 +165,10 @@ public class Manager {
 //                        }
 
                         if(getStats){
-                            Manager manager = new Manager();
+                           Manager manager = new Manager();
                             manager.getAllStats(context);
                         }
+                        ((MainActivity)context).playGame();
 
                     } catch (JSONException e) {
                         e.printStackTrace();

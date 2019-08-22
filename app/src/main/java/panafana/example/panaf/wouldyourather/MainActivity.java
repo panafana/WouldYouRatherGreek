@@ -76,6 +76,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import panafana.example.panaf.wouldyourather.models.Question;
+import panafana.example.panaf.wouldyourather.models.Stats;
 import panafana.example.panaf.wouldyourather.utils.Manager;
 
 import static java.lang.Math.abs;
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
     int couplesQuestionsCount=0;
     int max;
     Manager manager;
-
+    Context context;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -131,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //MobileAds.initialize(this,"ca-app-pub-2471480338929808~1664063554");
-
+        context = this;
         mInterstitialAd = new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-2471480338929808/6440025315");
 
@@ -294,12 +295,12 @@ public class MainActivity extends AppCompatActivity {
                             case "Αστείες":isFunny=true;
                                 resetGameState();
                                 break;
-                            case "Ανησυχητικές":isDisturbing=true;
-                                resetGameState();
-                                break;
-                            case "Αηδιαστικές": isGrose=true;
-                                resetGameState();
-                                break;
+//                            case "Ανησυχητικές":isDisturbing=true;
+//                                resetGameState();
+//                                break;
+//                            case "Αηδιαστικές": isGrose=true;
+//                                resetGameState();
+//                                break;
                             case "Για ζευγάρια": isCouples=true;
                                 resetGameState();
                                 break;
@@ -433,7 +434,8 @@ public class MainActivity extends AppCompatActivity {
     private class JsonReadTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-
+            Manager manager = new Manager();
+            manager.getQuestions(context,false);
             SP = getSharedPreferences("questions", MODE_PRIVATE);
 
             String id;
@@ -511,7 +513,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             makeLists();
 
-            playGame();
+
 
         }
     }// end async task
@@ -776,10 +778,12 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> ids = new ArrayList<>(set3);
 
 
-        Gson gson5 = new Gson();
-        String json5 = SP.getString("allquestions", null);
-        Type type5 = new TypeToken<ArrayList<Question>>() {}.getType();
-        final ArrayList<Question>  allquestions = gson5.fromJson(json5, type5);
+        final SharedPreferences SP = getSharedPreferences("questions", MODE_PRIVATE);
+        final String temp = SP.getString("allquestions",null);
+        Gson gson33 = new Gson();
+        Type type33 = new TypeToken<ArrayList<Question>>() {
+        }.getType();
+        ArrayList<Question> allquestions = gson33.fromJson(temp, type33);
 
 
 
@@ -825,16 +829,34 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        for(int i=0;i<bigTable.get(0).size();i++){
-            if(bigTable.get(2).get(i).equals("default")){
+//        for(int i=0;i<bigTable.get(0).size();i++){
+//            if(bigTable.get(2).get(i).equals("default")){
+//                defaultQuestionsCount++;
+//            }else if(bigTable.get(2).get(i).equals("funny")){
+//                funnyQuestionsCount++;
+//            }else if(bigTable.get(2).get(i).equals("disturbing")){
+//                disturbingQuestionsCount++;
+//            }else if(bigTable.get(2).get(i).equals("grose")){
+//                groseQuestionsCount++;
+//            }else if(bigTable.get(2).get(i).equals("couples")){
+//                couplesQuestionsCount++;
+//            }
+
+
+//        }
+         defaultQuestionsCount=0;
+         funnyQuestionsCount=0;
+         disturbingQuestionsCount=0;
+         groseQuestionsCount=0;
+         couplesQuestionsCount=0;
+
+
+        for(int i=0;i<allquestions.size();i++){
+            if(allquestions.get(i).getCategory().equals("default")){
                 defaultQuestionsCount++;
-            }else if(bigTable.get(2).get(i).equals("funny")){
+            }else if(allquestions.get(i).getCategory().equals("funny")){
                 funnyQuestionsCount++;
-            }else if(bigTable.get(2).get(i).equals("disturbing")){
-                disturbingQuestionsCount++;
-            }else if(bigTable.get(2).get(i).equals("grose")){
-                groseQuestionsCount++;
-            }else if(bigTable.get(2).get(i).equals("couples")){
+            }else if(allquestions.get(i).getCategory().equals("couples")){
                 couplesQuestionsCount++;
             }
         }
@@ -855,22 +877,22 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
         final float coeff = 100f*(1f/questions.size());
-        max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount+couplesQuestionsCount-1;
+        max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount+couplesQuestionsCount-2;
 
 
         globalI=nextQuestion(max);
         while(true){
-            String category = bigTable.get(2).get(globalI);
+            String category = allquestions.get(globalI).getCategory();
             if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                 break;
             }else{
                 globalI=nextQuestion(max);
             }
         }
-        System.out.println("category "+bigTable.get(2).get(globalI));
+        System.out.println("category "+ allquestions.get(globalI).getCategory());
         System.out.println("first gloabI "+globalI);
 
-        String[] qst = bigTable.get(1).get(globalI).split("@",2);
+        String[] qst =  allquestions.get(globalI).getQuestion().split("@",2);
         System.out.println(qst[0]);
         System.out.println(qst[1]);
         upperText.setText(qst[0]);
@@ -915,20 +937,15 @@ public class MainActivity extends AppCompatActivity {
             //manager.updateStats(this,"5d5bba8d6be1113f5413f601",0);
             manager.getAllStats(this);
             //manager.getStats(this,"5d5bba8d6be1113f5413f600");
-            final SharedPreferences SP = getSharedPreferences("questions", MODE_PRIVATE);
-            final String temp = SP.getString("allquestions",null);
-            Gson gson33 = new Gson();
-            Type type33 = new TypeToken<ArrayList<Question>>() {
-            }.getType();
-            ArrayList<Question> allquestions2 = gson33.fromJson(temp, type33);
-            int size = allquestions2.size();
+
+            int size = allquestions.size();
             for(int i = 0; i<size;i++) {
-                System.out.println("stats "+allquestions2.get(i).getStats().getMale0()+" "
-                        +allquestions2.get(i).getStats().getFemale0()+" "
-                        +allquestions2.get(i).getStats().getOther0()+" "
-                        +allquestions2.get(i).getStats().getMale1()+" "
-                        +allquestions2.get(i).getStats().getFemale1()+" "
-                        +allquestions2.get(i).getStats().getOther1());
+                System.out.println("stats "+allquestions.get(i).getStats().getMale0()+" "
+                        +allquestions.get(i).getStats().getFemale0()+" "
+                        +allquestions.get(i).getStats().getOther0()+" "
+                        +allquestions.get(i).getStats().getMale1()+" "
+                        +allquestions.get(i).getStats().getFemale1()+" "
+                        +allquestions.get(i).getStats().getOther1());
             }
 
         });
@@ -1217,32 +1234,42 @@ public class MainActivity extends AppCompatActivity {
                     */
                     System.out.println("max "+max);
                     while(true){
-                        String category = bigTable.get(2).get(globalI);
+                        String category =  allquestions.get(globalI).getCategory();
                         if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                             break;
                         }else{
                             globalI=nextQuestion(max);
                         }
                     }
-                    System.out.println("category "+bigTable.get(2).get(globalI));
+                    System.out.println("category "+ allquestions.get(globalI).getCategory());
 
                     System.out.println("globalI stats "+globalI);
+//                    if(genderS.equals("male")){
+//                        submitStats ss = new submitStats(globalI+1, 0, 1, 0, 0);
+//                        ss.execute((Void) null);
+//                    }else if(genderS.equals("female")){
+//                        submitStats ss = new submitStats(globalI+1, 0, 0, 1, 0);
+//                        ss.execute((Void) null);
+//                    }else{
+//                        submitStats ss = new submitStats(globalI+1, 0, 0, 0, 1);
+//                        ss.execute((Void) null);
+//                    }
+//                    GetStats gs = new GetStats();
+//                    gs.execute(getStatsUrl);
+
+                    Manager manager = new Manager();
                     if(genderS.equals("male")){
-                        submitStats ss = new submitStats(globalI+1, 0, 1, 0, 0);
-                        ss.execute((Void) null);
+                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),0);
                     }else if(genderS.equals("female")){
-                        submitStats ss = new submitStats(globalI+1, 0, 0, 1, 0);
-                        ss.execute((Void) null);
+                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),1);
                     }else{
-                        submitStats ss = new submitStats(globalI+1, 0, 0, 0, 1);
-                        ss.execute((Void) null);
+                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),2);
                     }
-                    GetStats gs = new GetStats();
-                    gs.execute(getStatsUrl);
+
                     //System.out.println(other0);
 
 
-                        String[] qst = bigTable.get(1).get(globalI).split("@", 2);
+                        String[] qst = allquestions.get(globalI).getQuestion().split("@", 2);
                         upperText.setText(qst[0]);
                         lowerText.setText(qst[1]);
 
@@ -1251,23 +1278,30 @@ public class MainActivity extends AppCompatActivity {
                         System.out.println(qst[0]);
                         System.out.println(qst[1]);
 
+                     manager.getStats(getApplicationContext(),allquestions.get(globalI).getId());
+
                     showstats=1;
                 }else{
-
-
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
+                    Stats stats = allquestions.get(globalI).getStats();
+                    male0i = stats.getMale0();
+                    female0i = stats.getFemale0();
+                    other0i = stats.getOther0();
+                    male1i = stats.getMale1();
+                    female1i = stats.getFemale1();
+                    other1i = stats.getOther1();
 
-                    try{
-                        male0i =(male0.get(globalI));
-                    }catch (IndexOutOfBoundsException e){
-                        globalI=0;
-                        male0i =(male0.get(globalI));
-                    }
-                    female0i=(female0.get(globalI));
-                    other0i = (other0.get(globalI));
-                    male1i=(male1.get(globalI));
-                    female1i=(female1.get(globalI));
-                    other1i=(other1.get(globalI));
+//                    try{
+//                        male0i =(male0.get(globalI));
+//                    }catch (IndexOutOfBoundsException e){
+//                        globalI=0;
+//                        male0i =(male0.get(globalI));
+//                    }
+//                    female0i=(female0.get(globalI));
+//                    other0i = (other0.get(globalI));
+//                    male1i=(male1.get(globalI));
+//                    female1i=(female1.get(globalI));
+//                    other1i=(other1.get(globalI));
 
                     float lowerstatsmale = (float) (male1i)/(float) (female1i+male1i+other1i);
                     float lowerstatfesmale = (float) (female1i)/(float) (female1i+male1i+other1i);
@@ -1387,30 +1421,40 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("max "+max);
 
                     while(true){
-                        String category = bigTable.get(2).get(globalI);
+                        //String category = bigTable.get(2).get(globalI);
+                        String category =  allquestions.get(globalI).getCategory();
                         if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
                             break;
                         }else{
                             globalI=nextQuestion(max);
                         }
                     }
-                    System.out.println("category "+bigTable.get(2).get(globalI));
+                    //System.out.println("category "+bigTable.get(2).get(globalI));
 
                     System.out.println("globalI stats "+globalI);
-                    if(genderS.equals("male")){
-                        submitStats ss = new submitStats(globalI+1, 1, 1, 0, 0);
-                        ss.execute((Void) null);
-                    }else if(genderS.equals("female")){
-                        submitStats ss = new submitStats(globalI+1, 1, 0, 1, 0);
-                        ss.execute((Void) null);
-                    }else{
-                        submitStats ss = new submitStats(globalI+1, 0, 0, 0, 1);
-                        ss.execute((Void) null);
-                    }
-                    GetStats gs = new GetStats();
-                    gs.execute(new String[] {getStatsUrl});
+//                    if(genderS.equals("male")){
+//                        submitStats ss = new submitStats(globalI+1, 1, 1, 0, 0);
+//                        ss.execute((Void) null);
+//                    }else if(genderS.equals("female")){
+//                        submitStats ss = new submitStats(globalI+1, 1, 0, 1, 0);
+//                        ss.execute((Void) null);
+//                    }else{
+//                        submitStats ss = new submitStats(globalI+1, 0, 0, 0, 1);
+//                        ss.execute((Void) null);
+//                    }
+//                    GetStats gs = new GetStats();
+//                    gs.execute(new String[] {getStatsUrl});
 
-                        String[] qst = bigTable.get(1).get(globalI).split("@", 2);
+                    Manager manager = new Manager();
+                    if(genderS.equals("male")){
+                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),3);
+                    }else if(genderS.equals("female")){
+                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),4);
+                    }else{
+                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),5);
+                    }
+
+                        String[] qst = allquestions.get(globalI).getQuestion().split("@", 2);
                         lowerText.setText(qst[1]);
                         upperText.setText(qst[0]);
                         currentQstUp=qst[0];
@@ -1422,18 +1466,25 @@ public class MainActivity extends AppCompatActivity {
                 }else{
 
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
-                    try{
-                        male0i =(male0.get(globalI));
-                    }catch (IndexOutOfBoundsException e){
-                        globalI=0;
-                        male0i =(male0.get(globalI));
-                    }
-
-                    female0i=(female0.get(globalI));
-                    other0i = (other0.get(globalI));
-                    male1i=(male1.get(globalI));
-                    female1i=(female1.get(globalI));
-                    other1i=(other1.get(globalI));
+                    Stats stats = allquestions.get(globalI).getStats();
+                    male0i = stats.getMale0();
+                    female0i = stats.getFemale0();
+                    other0i = stats.getOther0();
+                    male1i = stats.getMale1();
+                    female1i = stats.getFemale1();
+                    other1i = stats.getOther1();
+//                    try{
+//                        male0i =(male0.get(globalI));
+//                    }catch (IndexOutOfBoundsException e){
+//                        globalI=0;
+//                        male0i =(male0.get(globalI));
+//                    }
+//
+//                    female0i=(female0.get(globalI));
+//                    other0i = (other0.get(globalI));
+//                    male1i=(male1.get(globalI));
+//                    female1i=(female1.get(globalI));
+//                    other1i=(other1.get(globalI));
 
                     float lowerstatsmale = (float) (male1i)/(float) (female1i+male1i+other1i);
                     float lowerstatfesmale = (float) (female1i)/(float) (female1i+male1i+other1i);
