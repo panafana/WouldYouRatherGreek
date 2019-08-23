@@ -62,6 +62,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,9 +73,13 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 
+import panafana.example.panaf.wouldyourather.models.Comment;
 import panafana.example.panaf.wouldyourather.models.Question;
 import panafana.example.panaf.wouldyourather.models.Stats;
 import panafana.example.panaf.wouldyourather.utils.Manager;
@@ -120,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
     int groseQuestionsCount=0;
     int couplesQuestionsCount=0;
     int max;
+    ArrayList<ArrayList<Comment>> allcomments = new ArrayList<>();
     Manager manager;
     Context context;
 
@@ -825,7 +831,28 @@ public class MainActivity extends AppCompatActivity {
         bigTable.add(ids);
         bigTable.add(questions);
         bigTable.add(categories);
+        String FILENAME = "hello_file.txt";
+        ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
+        ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
+        ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
+        ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
+        ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
+        ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
+        //String string = "hello world!";
 
+
+
+//                    try{
+//                        male0i =(male0.get(globalI));
+//                    }catch (IndexOutOfBoundsException e){
+//                        globalI=0;
+//                        male0i =(male0.get(globalI));
+//                    }
+//                    female0i=(female0.get(globalI));
+//                    other0i = (other0.get(globalI));
+//                    male1i=(male1.get(globalI));
+//                    female1i=(female1.get(globalI));
+//                    other1i=(other1.get(globalI));
 
 
 
@@ -1081,11 +1108,17 @@ public class MainActivity extends AppCompatActivity {
         commentImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+//                for(int i = 0;i<bigTable.get(0).size();i++){
+//                    GetComments gc = new GetComments();
+//                    gc.execute(commentsUrl,Integer.toString(i));
+//                }
+
+
+
                 Manager manager = new Manager();
                 manager.getComments(context,allquestions.get(globalI).getId());
                 Log.d("or","clicked");
-                //GetComments gc = new GetComments();
-                //gc.execute(commentsUrl,Integer.toString(globalI));
+
                 Intent i = new Intent(MainActivity.this,Comments.class);
                 i.putExtra("id",allquestions.get(globalI).getId());
                 i.putExtra("globalI",globalI);
@@ -1206,12 +1239,70 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
 
-                ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
-                ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
-                ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
-                ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
-                ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
-                ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
+//                ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
+//                ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
+//                ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
+//                ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
+//                ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
+//                ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
+//                FileOutputStream fos = null;
+//                try {
+//                    fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//
+//
+//
+//                for(int i = 0 ;i<bigTable.get(0).size();i++){
+//                    String string = "new Question({\n question:'";
+//                    string+=bigTable.get(1).get(i);
+//                    string+="',\n category:'";
+//                    string+=bigTable.get(2).get(i);
+//                    string+="',\n stats:[";
+//                    string+=male0.get(i);
+//                    string+=",";
+//                    string+=female0.get(i);
+//                    string+=",";
+//                    string+=other0.get(i);
+//                    string+=",";
+//                    string+=male1.get(i);
+//                    string+=",";
+//                    string+=female1.get(i);
+//                    string+=",";
+//                    string+=other1.get(i);
+//                    string+="],\n comments:[";
+//                    for(int j = 0 ;j<allcomments.get(i).size();j++){
+//                        string+="new Comment({\n comment:'";
+//                        string+=allcomments.get(i).get(j).getComment();
+//                        string+="',\n date:'";
+//                        string+=allcomments.get(i).get(j).getDate();
+//                        string+="',\n user:'";
+//                        string+=allcomments.get(i).get(j).getUser();
+//                        if(j==allcomments.get(i).size()-1){
+//                            string+="',\n })";
+//                        }else{
+//                            string+="',\n }),";
+//                        }
+//
+//                    }
+//                    string+="]\n }),\n";
+//
+//
+//                    try {
+//                        fos.write(string.getBytes());
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//
+//                try {
+//                    fos.close();
+//                    Log.e("file","done");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 buttonPressed=0;
                 if(showstats==0) {
                     globalI=nextQuestion(max);
@@ -1648,7 +1739,34 @@ public class MainActivity extends AppCompatActivity {
                 Intent i = new Intent(MainActivity.this,Comments.class);
                 i.putExtra("comments",jsonCommentResult);
                 i.putExtra("question",Integer.valueOf(result));
-                startActivity(i);
+                //startActivity(i);
+
+                allcomments.add(new ArrayList<>());
+
+                try {
+                    JSONObject jsonResponse = new JSONObject(jsonCommentResult);
+                    JSONArray jsonMainNode = jsonResponse.optJSONArray("result");
+                    for (int j = 0; j < jsonMainNode.length(); j++) {
+                        JSONObject jsonChildNode = jsonMainNode.getJSONObject(j);
+                        String tempc = jsonChildNode.optString("comment");
+                        String tempu = jsonChildNode.optString("user");
+                        String tempd = jsonChildNode.optString("date");
+
+                        // This could be MM/dd/yyyy, you original value is ambiguous
+
+                        //System.out.println("" + output.format(dateValue) + " real date " + tempd);
+                        Comment com = new Comment(tempc,tempd,tempu);
+                        //System.out.println(tempd);
+                        allcomments.get(Integer.parseInt(result)).add(com);
+
+                    }
+                }catch (JSONException e) {
+                    Toast.makeText(getApplicationContext(), "Error JSON Parser" + e.toString(),
+                            Toast.LENGTH_SHORT).show();
+                    Log.d("error ",e.toString());
+                } catch (NullPointerException e) {
+                   // Toast.makeText(this, "No internet", Toast.LENGTH_LONG).show();
+                }
             }
 
         }
