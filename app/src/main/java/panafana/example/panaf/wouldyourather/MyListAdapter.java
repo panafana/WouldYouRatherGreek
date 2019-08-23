@@ -32,9 +32,6 @@ public class MyListAdapter extends ArrayAdapter<Comment> {
         TextView commentText = rowView.findViewById(R.id.commentList);
         TextView dateText = rowView.findViewById(R.id.dateList);
         Comment com = comments.get(position);
-        Log.e("com",com.getComment());
-        Log.e("com",com.getDate());
-        Log.e("com",com.getUser());
 
 
         commentText.setText(comments.get(position).getComment());

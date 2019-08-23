@@ -138,10 +138,7 @@ public class Comments extends AppCompatActivity {
 //        } catch (ParseException e) {
 //            e.printStackTrace();
 //        }
-        if(allquestions.get(globalI).getComments().size()>0){
-            Log.e("com com",allquestions.get(globalI).getComments().get(0).getComment());
 
-        }
 
 
         adapter = new MyListAdapter(this,allquestions.get(globalI).getComments());
