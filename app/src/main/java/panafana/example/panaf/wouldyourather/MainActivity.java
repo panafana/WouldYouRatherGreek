@@ -1081,9 +1081,15 @@ public class MainActivity extends AppCompatActivity {
         commentImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Manager manager = new Manager();
+                manager.getComments(context,allquestions.get(globalI).getId());
                 Log.d("or","clicked");
-                GetComments gc = new GetComments();
-                gc.execute(commentsUrl,Integer.toString(globalI));
+                //GetComments gc = new GetComments();
+                //gc.execute(commentsUrl,Integer.toString(globalI));
+                Intent i = new Intent(MainActivity.this,Comments.class);
+                i.putExtra("id",allquestions.get(globalI).getId());
+                i.putExtra("globalI",globalI);
+                startActivity(i);
             }
         });
 

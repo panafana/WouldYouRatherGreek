@@ -1,25 +1,26 @@
 package panafana.example.panaf.wouldyourather;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-public class MyListAdapter extends ArrayAdapter<String> {
+import java.util.ArrayList;
+
+import panafana.example.panaf.wouldyourather.models.Comment;
+
+public class MyListAdapter extends ArrayAdapter<Comment> {
 
     private final Activity context;
-    private String[] comment;
-    private  String[] user;
-    private  String[] date;
+    private ArrayList<Comment> comments;
 
-    public MyListAdapter(Activity context, String[] comment,String[] user, String[] date) {
-        super(context, R.layout.mylist, comment);
+    public MyListAdapter(Activity context, ArrayList<Comment> comments) {
+        super(context, R.layout.mylist,comments);
         this.context=context;
-        this.comment=comment;
-        this.user=user;
-        this.date=date;
+       this.comments= comments;
 
     }
 
@@ -27,23 +28,28 @@ public class MyListAdapter extends ArrayAdapter<String> {
         LayoutInflater inflater=context.getLayoutInflater();
         View rowView=inflater.inflate(R.layout.mylist, null,true);
 
-        TextView userText = (TextView) rowView.findViewById(R.id.userList);
+        TextView userText = rowView.findViewById(R.id.userList);
         TextView commentText = rowView.findViewById(R.id.commentList);
         TextView dateText = rowView.findViewById(R.id.dateList);
-        commentText.setText(comment[position]);
-        dateText.setText(date[position]);
-        userText.setText(user[position]);
+        Comment com = comments.get(position);
+        Log.e("com",com.getComment());
+        Log.e("com",com.getDate());
+        Log.e("com",com.getUser());
+
+
+        commentText.setText(comments.get(position).getComment());
+        dateText.setText(comments.get(position).getDate());
+        userText.setText(comments.get(position).getUser());
 
         return rowView;
 
     }
-    public void updateAdapter(String[] comment,String[] user, String[] date) {
-        this.comment=comment;
-        this.user=user;
-        this.date=date;
+    public void updateAdapter(ArrayList<Comment> comments) {
+
+        this.comments = comments;
         //this.remove(comment[]);
         //and call notifyDataSetChanged
-        this.notifyDataSetChanged();
+
 
     }
 }

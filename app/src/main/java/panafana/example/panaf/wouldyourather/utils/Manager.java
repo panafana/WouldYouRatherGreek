@@ -46,6 +46,9 @@ public class Manager {
         @POST("/android/get-stats")
         Call<ResponseBody> getStats(@Body JsonObject obj);
 
+        @POST("/android/get-comments")
+        Call<ResponseBody> getComments(@Body JsonObject obj);
+
         @POST("/android/get-all-stats")
         Call<ResponseBody> getAllStats();
 
@@ -293,6 +296,86 @@ public class Manager {
         });
 
 
+
+    }
+
+    public void getComments(final Context context,final String id){
+        final String serverUrl = context.getString(R.string.server_url);
+        final Utils utils = new Utils();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", id);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface service=retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = service.getComments(jsonObject);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        String responsestr = response.body().string();
+                        Log.d("get comments",response.body().string());
+
+                        JSONObject new_comments = new JSONObject(responsestr);
+
+                        System.out.println("new "+new_comments);
+                        JSONArray array = new_comments.getJSONArray("comments");
+
+                        ArrayList<Comment> new_coms = new ArrayList<>();
+                        for(int i = 0; i < array.length();i++){
+                            JSONObject temp = array.getJSONObject(i);
+                            Comment temp_com = new Comment(temp.getString("comment"),temp.getString("date"),temp.getString("user"));
+                            new_coms.add(temp_com);
+                            Log.e("com1",temp.getString("comment"));
+                        }
+
+                        final SharedPreferences SP = context.getSharedPreferences("questions", MODE_PRIVATE);
+                        final String temp = SP.getString("allquestions",null);
+                        Gson gson = new Gson();
+                        Type type = new TypeToken<ArrayList<Question>>() {
+                        }.getType();
+                        ArrayList<Question> allquestions = gson.fromJson(temp, type);
+                        int size = allquestions.size();
+                        for(int i = 0; i<size;i++){
+                            if(allquestions.get(i).getId().equals(id)){
+                                allquestions.get(i).setComments(new_coms);
+                                break;
+                            }
+                        }
+                        SharedPreferences.Editor editor = SP.edit();
+                        Gson gson1 = new Gson();
+                        String json1 = gson1.toJson(allquestions);
+                        editor.putString("allquestions",json1);
+                        editor.apply();
+                        Log.d("get comments","updated");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.d("get comments", String.valueOf(response.code()));
+                }else{
+                    try {
+                        String responsestr = response.body().string();
+                        Log.d("get comments",response.body().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                Log.d("get comments","Error");
+            }
+        });
 
     }
 
