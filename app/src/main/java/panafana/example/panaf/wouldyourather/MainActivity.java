@@ -11,7 +11,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -52,31 +51,11 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.squareup.picasso.Picasso;
 
-import org.apache.http.client.ClientProtocolException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Random;
 
 import panafana.example.panaf.wouldyourather.models.Comment;
@@ -168,9 +147,9 @@ public class MainActivity extends AppCompatActivity {
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
-        accessWebService();
-        GetStats g = new GetStats();
-        g.execute(new String[]{getStatsUrl});
+//        accessWebService();
+//        GetStats g = new GetStats();
+//        g.execute(new String[]{getStatsUrl});
         SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
 
         showstats = 1;
@@ -358,7 +337,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
     }
 
 
@@ -371,15 +349,6 @@ public class MainActivity extends AppCompatActivity {
         editor.commit();
     }
 
-    ArrayList<Integer> refreshStats(String key){
-        SP = getSharedPreferences("questions", MODE_PRIVATE);
-        Gson gson = new Gson();
-        String json = SP.getString(key, null);
-        Type type = new TypeToken<ArrayList<Integer>>() {}.getType();
-        ArrayList<Integer>  set = gson.fromJson(json, type);
-        return set;
-
-    }
 
     int nextQuestion(int maxQ){
         Gson gson = new Gson();
@@ -436,352 +405,12 @@ public class MainActivity extends AppCompatActivity {
         return random;
     }
 
-    // Async Task to access the web
-    private class JsonReadTask extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... params) {
-            Manager manager = new Manager();
-            manager.getQuestions(context,false);
-            SP = getSharedPreferences("questions", MODE_PRIVATE);
-
-            String id;
-            Gson gson4 = new Gson();
-            //System.out.println(SP.getString("ids", null));
-            if(SP.contains("ids")) {
-                String json4 = SP.getString("ids", null);
-                Type type4 = new TypeToken<ArrayList<String>>() {
-                }.getType();
-                ArrayList<String> set4 = gson4.fromJson(json4, type4);
-                ArrayList<String> ids = new ArrayList<>(set4);
-                if((ids.size() - 1)>0){
-                    id = new String(ids.get(ids.size() - 1));
-                }else{
-                    id = "0";
-                }
-
-            }else {
-                id = "0";
-            }
-
-            try {
-                URL url = new URL(params[0]);
-                //String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
-                Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("id", id);
-                String query = builder.build().getEncodedQuery();
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-
-
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(query);
-
-                writer.flush();
-                writer.close();
-                os.close();
-                conn.connect();
-
-
-                InputStream IS = conn.getInputStream();
-                // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"), 8);
-                StringBuilder sb = new StringBuilder();
-                String line = null;
-                while ((line = reader.readLine()) != null)
-                {
-                    sb.append(line + "\n");
-                }
-                jsonResult = sb.toString();
-                Log.d("result",jsonResult);
-                System.out.println(new String(jsonResult.getBytes(),"UTF-8"));
-                conn.disconnect();
-            }
-            catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(ctx, "Connection Error", Toast.LENGTH_LONG).show());
-                resetGameState();
-                return null;
-            }
-            return null;
-        }
-
-        @SuppressLint("ClickableViewAccessibility")
-        @Override
-        protected void onPostExecute(String result) {
-            makeLists();
-
-
-
-        }
-    }// end async task
-
-    public void accessWebService() {
-        JsonReadTask task = new JsonReadTask();
-        // passes values for the urls string array
-        task.execute(url);
-    }
-
-    // build hash set for list view
-    public void makeLists() {
-        //getting already stored questions
-        SP = getSharedPreferences("questions", MODE_PRIVATE);
-        ArrayList<String> questions = new ArrayList<>();
-        ArrayList<String> category = new ArrayList<>();
-        ArrayList<String> ids = new ArrayList<>();
-        ArrayList<Integer> males0 = new ArrayList<>();
-        ArrayList<Integer> females0 = new ArrayList<>();
-        ArrayList<Integer> others0 = new ArrayList<>();
-        ArrayList<Integer> males1 = new ArrayList<>();
-        ArrayList<Integer> females1 = new ArrayList<>();
-        ArrayList<Integer> others1 = new ArrayList<>();
-        Gson gson = new Gson();
-        String json = SP.getString("questions", null);
-        Type type = new TypeToken<ArrayList<String>>() {
-        }.getType();
-        ArrayList<String> set = gson.fromJson(json, type);
-        Gson gson3 = new Gson();
-        String json3 = SP.getString("category", null);
-        Type type3 = new TypeToken<ArrayList<String>>() {
-        }.getType();
-        ArrayList<String> set3 = gson3.fromJson(json3, type3);
-        Gson gson4 = new Gson();
-        String json4 = SP.getString("ids", null);
-        Type type4 = new TypeToken<ArrayList<String>>() {
-        }.getType();
-        ArrayList<String> set4 = gson4.fromJson(json4, type4);
-        Gson gson5 = new Gson();
-        String json5 = SP.getString("male0", null);
-        Type type5 = new TypeToken<ArrayList<Integer>>() {
-        }.getType();
-        ArrayList<Integer> set5 = gson5.fromJson(json5, type5);
-        Gson gson6 = new Gson();
-        String json6 = SP.getString("female0", null);
-        Type type6 = new TypeToken<ArrayList<Integer>>() {
-        }.getType();
-        ArrayList<Integer> set6 = gson6.fromJson(json6, type6);
-        Gson gson7 = new Gson();
-        String json7 = SP.getString("other0", null);
-        Type type7 = new TypeToken<ArrayList<Integer>>() {
-        }.getType();
-        ArrayList<Integer> set7 = gson7.fromJson(json7, type7);
-        Gson gson8 = new Gson();
-        String json8 = SP.getString("male1", null);
-        Type type8 = new TypeToken<ArrayList<Integer>>() {
-        }.getType();
-        ArrayList<Integer> set8 = gson8.fromJson(json8, type8);
-        Gson gson9 = new Gson();
-        String json9 = SP.getString("female1", null);
-        Type type9 = new TypeToken<ArrayList<Integer>>() {
-        }.getType();
-        ArrayList<Integer> set9 = gson9.fromJson(json9, type9);
-        Gson gson10 = new Gson();
-        String json10 = SP.getString("other1", null);
-        Type type10 = new TypeToken<ArrayList<Integer>>() {
-        }.getType();
-        ArrayList<Integer> set10 = gson10.fromJson(json10, type10);
-
-        if(set!=null) {
-            questions = new ArrayList<>(set);
-            category = new ArrayList<>(set3);
-            ids = new ArrayList<>(set4);
-            males0 = new ArrayList<>(set5);
-            females0 = new ArrayList<>(set6);
-            others0 = new ArrayList<>(set7);
-            males1 = new ArrayList<>(set8);
-            females1 = new ArrayList<>(set9);
-            others1 = new ArrayList<>(set10);
-        }
-        //splitting Json data to variables and adding them to the array lists
-        try {
-            JSONObject jsonResponse = new JSONObject(jsonResult);
-            JSONArray jsonMainNode = jsonResponse.optJSONArray("result");
-            for (int i = 0; i < jsonMainNode.length(); i++) {
-                JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
-                String qst = jsonChildNode.optString("question");
-                String cat = jsonChildNode.optString("category");
-                String id = jsonChildNode.optString("id");
-                Integer male0 = jsonChildNode.optInt("male0");
-                Integer female0 = jsonChildNode.optInt("female0");
-                Integer other0 = jsonChildNode.optInt("other0");
-                Integer male1 = jsonChildNode.optInt("male1");
-                Integer female1 = jsonChildNode.optInt("female1");
-                Integer other1 = jsonChildNode.optInt("other1");
-
-                questions.add(qst);
-                category.add(cat);
-                ids.add(id);
-                males0.add(male0);
-                females0.add(female0);
-                others0.add(other0);
-                males1.add(male1);
-                females1.add(female1);
-                others1.add(other1);
-                System.out.println("New data: "+ (i+1));
-                newquestionscount=i+1;
-            }
-
-        } catch (JSONException e) {
-            Toast.makeText(getApplicationContext(), "Error JSON Parser" + e.toString(),
-                    Toast.LENGTH_SHORT).show();
-        } catch (NullPointerException e) {
-            Toast.makeText(this, "No internet", Toast.LENGTH_LONG).show();
-        }
-        //converting array lists back to Gson and storing
-        SharedPreferences.Editor editor = SP.edit();
-
-        ArrayList<String> set1 = new ArrayList<>(questions);
-        ArrayList<String> set13 = new ArrayList<>(category);
-        ArrayList<String> set14 = new ArrayList<>(ids);
-        ArrayList<Integer> set15 = new ArrayList<>(males0);
-        ArrayList<Integer> set16 = new ArrayList<>(females0);
-        ArrayList<Integer> set17 = new ArrayList<>(others0);
-        ArrayList<Integer> set18 = new ArrayList<>(males1);
-        ArrayList<Integer> set19 = new ArrayList<>(females1);
-        ArrayList<Integer> set110 = new ArrayList<>(others1);
-
-        Gson gson1 = new Gson();
-        String json1 = gson1.toJson(set1);
-        Gson gson13 = new Gson();
-        String json13 = gson13.toJson(set13);
-        Gson gson14 = new Gson();
-        String json14 = gson14.toJson(set14);
-        Gson gson15 = new Gson();
-        String json15 = gson15.toJson(set15);
-        Gson gson16 = new Gson();
-        String json16 = gson16.toJson(set16);
-        Gson gson17 = new Gson();
-        String json17 = gson17.toJson(set17);
-        Gson gson18 = new Gson();
-        String json18 = gson18.toJson(set18);
-        Gson gson19 = new Gson();
-        String json19 = gson19.toJson(set19);
-        Gson gson110 = new Gson();
-        String json110 = gson110.toJson(set110);
-
-        editor.putString("questions", json1);
-        editor.putString("category", json13);
-        editor.putString("ids", json14);
-        editor.putString("male0", json15);
-        editor.putString("female0", json16);
-        editor.putString("other0", json17);
-        editor.putString("male1", json18);
-        editor.putString("female1", json19);
-        editor.putString("other1", json110);
-        editor.apply();
-        editor.commit();
-        System.out.println("stored");
-        //System.out.println("Messages: " + messages);
-        //System.out.println("Signatures: " + signatures);
-        //System.out.println("timestamps: " + timestamps);
-        //System.out.println("ids: " + ids);
-        //System.out.println("questions "+questions);
-        //System.out.println("other0"+json17);
-        //System.out.println("other1"+json110);
-
-    }
-
-    public void makeStatsLists(){
-        SP = getSharedPreferences("questions", MODE_PRIVATE);
-        ArrayList<Integer> males0 = new ArrayList<>();
-        ArrayList<Integer> females0 = new ArrayList<>();
-        ArrayList<Integer> others0 = new ArrayList<>();
-        ArrayList<Integer> males1 = new ArrayList<>();
-        ArrayList<Integer> females1 = new ArrayList<>();
-        ArrayList<Integer> others1 = new ArrayList<>();
-        //splitting Json data to variables and adding them to the array lists
-        try {
-            JSONObject jsonResponse = new JSONObject(jsonStatsResult);
-            JSONArray jsonMainNode = jsonResponse.optJSONArray("result");
-            for (int i = 0; i < jsonMainNode.length(); i++) {
-                JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
-                Integer male0 = jsonChildNode.optInt("male0");
-                Integer female0 = jsonChildNode.optInt("female0");
-                Integer other0 = jsonChildNode.optInt("other0");
-                Integer male1 = jsonChildNode.optInt("male1");
-                Integer female1 = jsonChildNode.optInt("female1");
-                Integer other1 = jsonChildNode.optInt("other1");
-                males0.add(male0);
-                females0.add(female0);
-                others0.add(other0);
-                males1.add(male1);
-                females1.add(female1);
-                others1.add(other1);
-            }
-
-        } catch (JSONException e) {
-            Toast.makeText(getApplicationContext(), "Error JSON Parser" + e.toString(),
-                    Toast.LENGTH_SHORT).show();
-            Log.d("error JSON",e.toString());
-        } catch (NullPointerException e) {
-            Toast.makeText(this, "No internet", Toast.LENGTH_LONG).show();
-        }
-        //converting array lists back to Gson and storing
-        SharedPreferences.Editor editor = SP.edit();
-
-        ArrayList<Integer> set15 = new ArrayList<>(males0);
-        ArrayList<Integer> set16 = new ArrayList<>(females0);
-        ArrayList<Integer> set17 = new ArrayList<>(others0);
-        ArrayList<Integer> set18 = new ArrayList<>(males1);
-        ArrayList<Integer> set19 = new ArrayList<>(females1);
-        ArrayList<Integer> set110 = new ArrayList<>(others1);
-
-        Gson gson15 = new Gson();
-        String json15 = gson15.toJson(set15);
-        Gson gson16 = new Gson();
-        String json16 = gson16.toJson(set16);
-        Gson gson17 = new Gson();
-        String json17 = gson17.toJson(set17);
-        Gson gson18 = new Gson();
-        String json18 = gson18.toJson(set18);
-        Gson gson19 = new Gson();
-        String json19 = gson19.toJson(set19);
-        Gson gson110 = new Gson();
-        String json110 = gson110.toJson(set110);
-
-        editor.putString("male0", json15);
-        editor.putString("female0", json16);
-        editor.putString("other0", json17);
-        editor.putString("male1", json18);
-        editor.putString("female1", json19);
-        editor.putString("other1", json110);
-        editor.apply();
-        editor.commit();
-        System.out.println("stored");
-        //System.out.println("other0"+ json17);
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     public void playGame(){
         SP = getSharedPreferences("questions", MODE_PRIVATE);
         SharedPreferences SP3 = getSharedPreferences("gender",MODE_PRIVATE);
         final String genderS = SP3.getString("gender","other");
-        Log.d("saved ", String.valueOf(SP.getAll()));
-        final SharedPreferences.Editor editor = SP2.edit();
-        Gson gson = new Gson();
-        String json = SP.getString("questions", null);
-        Type type = new TypeToken<ArrayList<String>>() {}.getType();
-        ArrayList<String>  set = gson.fromJson(json, type);
-        Gson gson2 = new Gson();
-        String json2 = SP.getString("category", null);
-        Type type2 = new TypeToken<ArrayList<String>>() {}.getType();
-        ArrayList<String>  set2 = gson2.fromJson(json2, type2);
-        Gson gson3 = new Gson();
-        String json3 = SP.getString("ids", null);
-        Type type3 = new TypeToken<ArrayList<String>>() {}.getType();
-        ArrayList<String>  set3 = gson3.fromJson(json3, type3);
-
-        final ArrayList<String> questions = new ArrayList<>(set);
-        ArrayList<String> categories = new ArrayList<>(set2);
-        ArrayList<String> ids = new ArrayList<>(set3);
 
 
         final SharedPreferences SP = getSharedPreferences("questions", MODE_PRIVATE);
@@ -798,9 +427,6 @@ public class MainActivity extends AppCompatActivity {
         Type type6 = new TypeToken<ArrayList<String>>() {}.getType();
         final ArrayList<String>  allcategories = gson6.fromJson(json6, type6);
 
-//        for(int i=0;i<allcategories.size();i++){
-//            Log.e("category",allcategories.get(i));
-//        }
 
         final ImageView upperImage = findViewById(R.id.upperImage);
         final ImageView lowerImage = findViewById(R.id.lowerImage);
@@ -827,55 +453,12 @@ public class MainActivity extends AppCompatActivity {
         isCouples = SP5.getBoolean("isCouples",false);
         isNSFW = SP5.getBoolean("isNSFW",false);
 
-        ArrayList<ArrayList<String>> bigTable = new ArrayList<>();
-        bigTable.add(ids);
-        bigTable.add(questions);
-        bigTable.add(categories);
-        String FILENAME = "hello_file.txt";
-        ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
-        ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
-        ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
-        ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
-        ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
-        ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
-        //String string = "hello world!";
 
-
-
-//                    try{
-//                        male0i =(male0.get(globalI));
-//                    }catch (IndexOutOfBoundsException e){
-//                        globalI=0;
-//                        male0i =(male0.get(globalI));
-//                    }
-//                    female0i=(female0.get(globalI));
-//                    other0i = (other0.get(globalI));
-//                    male1i=(male1.get(globalI));
-//                    female1i=(female1.get(globalI));
-//                    other1i=(other1.get(globalI));
-
-
-
-//        for(int i=0;i<bigTable.get(0).size();i++){
-//            if(bigTable.get(2).get(i).equals("default")){
-//                defaultQuestionsCount++;
-//            }else if(bigTable.get(2).get(i).equals("funny")){
-//                funnyQuestionsCount++;
-//            }else if(bigTable.get(2).get(i).equals("disturbing")){
-//                disturbingQuestionsCount++;
-//            }else if(bigTable.get(2).get(i).equals("grose")){
-//                groseQuestionsCount++;
-//            }else if(bigTable.get(2).get(i).equals("couples")){
-//                couplesQuestionsCount++;
-//            }
-
-
-//        }
-         defaultQuestionsCount=0;
-         funnyQuestionsCount=0;
-         disturbingQuestionsCount=0;
-         groseQuestionsCount=0;
-         couplesQuestionsCount=0;
+        defaultQuestionsCount=0;
+        funnyQuestionsCount=0;
+        disturbingQuestionsCount=0;
+        groseQuestionsCount=0;
+        couplesQuestionsCount=0;
 
 
         for(int i=0;i<allquestions.size();i++){
@@ -903,7 +486,7 @@ public class MainActivity extends AppCompatActivity {
         if(newquestionscount>0) Toast.makeText(getApplicationContext(), newquestionscount+" νέες ερωτήσεις", Toast.LENGTH_LONG).show();
 
         SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
-        final float coeff = 100f*(1f/questions.size());
+        final float coeff = 100f*(1f/allquestions.size());
         max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount+couplesQuestionsCount-2;
 
 
@@ -962,73 +545,73 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d("or","clicked");
             //manager.updateStats(this,"5d5bba8d6be1113f5413f601",0);
-            manager.getAllStats(this);
-            //manager.getStats(this,"5d5bba8d6be1113f5413f600");
-
-            int size = allquestions.size();
-            for(int i = 0; i<size;i++) {
-                System.out.println("stats "+allquestions.get(i).getStats().getMale0()+" "
-                        +allquestions.get(i).getStats().getFemale0()+" "
-                        +allquestions.get(i).getStats().getOther0()+" "
-                        +allquestions.get(i).getStats().getMale1()+" "
-                        +allquestions.get(i).getStats().getFemale1()+" "
-                        +allquestions.get(i).getStats().getOther1());
-            }
+//            manager.getAllStats(this);
+//            //manager.getStats(this,"5d5bba8d6be1113f5413f600");
+//
+//            int size = allquestions.size();
+//            for(int i = 0; i<size;i++) {
+//                System.out.println("stats "+allquestions.get(i).getStats().getMale0()+" "
+//                        +allquestions.get(i).getStats().getFemale0()+" "
+//                        +allquestions.get(i).getStats().getOther0()+" "
+//                        +allquestions.get(i).getStats().getMale1()+" "
+//                        +allquestions.get(i).getStats().getFemale1()+" "
+//                        +allquestions.get(i).getStats().getOther1());
+//            }
 
         });
 
         shareImage.setOnTouchListener((view, motionEvent) -> {
-                //do something when pressed down
-                //Log.d("or", "or clicked");
+            //do something when pressed down
+            //Log.d("or", "or clicked");
             if(motionEvent.getPointerCount()>1){
                 shareImage.setVisibility(View.VISIBLE);
             }
-                float x2,y2;
-                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-                    //do something when pressed down
-                    //Log.d("or", "or clicked");
-
-                    Handler handler = new Handler(Looper.getMainLooper());
-                    handler.post(() -> {
-                        // UI code goes here
-
+            float x2,y2;
+            if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                 //do something when pressed down
                 //Log.d("or", "or clicked");
-                shareImage.setVisibility(View.INVISIBLE);
-                shareImage2.setVisibility(View.VISIBLE);
-                    });
-                    //upperImage.setColorFilter(ctx.getResources().getColor(R.color.tint_blue),PorterDuff.Mode.MULTIPLY);
-                    xu=motionEvent.getX();
-                    yu=motionEvent.getY();
-                    return true;
+
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(() -> {
+                    // UI code goes here
+
+                    //do something when pressed down
+                    //Log.d("or", "or clicked");
+                    shareImage.setVisibility(View.INVISIBLE);
+                    shareImage2.setVisibility(View.VISIBLE);
+                });
+                //upperImage.setColorFilter(ctx.getResources().getColor(R.color.tint_blue),PorterDuff.Mode.MULTIPLY);
+                xu=motionEvent.getX();
+                yu=motionEvent.getY();
+                return true;
             }
             else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
                 //do something when let go
-                    x2=motionEvent.getX();
-                    y2=motionEvent.getY();
-                    //Log.d("absx ",Float.toString(abs(x2-xu)));
-                    //Log.d("absy ",Float.toString(abs(y2-yu)));
+                x2=motionEvent.getX();
+                y2=motionEvent.getY();
+                //Log.d("absx ",Float.toString(abs(x2-xu)));
+                //Log.d("absy ",Float.toString(abs(y2-yu)));
 
-                    Handler handler = new Handler(Looper.getMainLooper());
-                    handler.post(new Runnable() {
-                        public void run() {
-                            // UI code goes here
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    public void run() {
+                        // UI code goes here
                         shareImage2.setVisibility(View.INVISIBLE);
                         shareImage.setVisibility(View.VISIBLE);
 
 
 
 
-                        }
-                    });
-                    //do something when let go
-                    if((abs(x2-xu))>200||(abs(y2-yu))>200){
-                        //upperImage.setColorFilter(null);
-                        return true;
-                    }else {
-                        shareImage.performClick();
                     }
+                });
+                //do something when let go
+                if((abs(x2-xu))>200||(abs(y2-yu))>200){
+                    //upperImage.setColorFilter(null);
+                    return true;
+                }else {
+                    shareImage.performClick();
                 }
+            }
 
             return false;
         });
@@ -1057,49 +640,49 @@ public class MainActivity extends AppCompatActivity {
                 if(motionEvent.getPointerCount()>1){
                     commentImage.setVisibility(View.VISIBLE);
                 }
+                //do something when pressed down
+                //Log.d("or", "or clicked");
+                float x2,y2;
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                     //do something when pressed down
                     //Log.d("or", "or clicked");
-                    float x2,y2;
-                    if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-                        //do something when pressed down
-                        //Log.d("or", "or clicked");
 
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        handler.post(() -> {
-                            // UI code goes here
-                            commentImage.setVisibility(View.INVISIBLE);
-                            commentImage2.setVisibility(View.VISIBLE);
-                        });
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(() -> {
+                        // UI code goes here
+                        commentImage.setVisibility(View.INVISIBLE);
+                        commentImage2.setVisibility(View.VISIBLE);
+                    });
 
-                        xu=motionEvent.getX();
-                        yu=motionEvent.getY();
-                        return true;
+                    xu=motionEvent.getX();
+                    yu=motionEvent.getY();
+                    return true;
 
                 }
                 else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
                     //do something when let go
-                        x2=motionEvent.getX();
-                        y2=motionEvent.getY();
-                        //Log.d("absx ",Float.toString(abs(x2-xu)));
-                        //Log.d("absy ",Float.toString(abs(y2-yu)));
+                    x2=motionEvent.getX();
+                    y2=motionEvent.getY();
+                    //Log.d("absx ",Float.toString(abs(x2-xu)));
+                    //Log.d("absy ",Float.toString(abs(y2-yu)));
 
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        handler.post(new Runnable() {
-                            public void run() {
-                                // UI code goes here
-                                 commentImage2.setVisibility(View.INVISIBLE);
-                                 commentImage.setVisibility(View.VISIBLE);
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        public void run() {
+                            // UI code goes here
+                            commentImage2.setVisibility(View.INVISIBLE);
+                            commentImage.setVisibility(View.VISIBLE);
 
 
-                            }
-                        });
-                        //do something when let go
-                        if((abs(x2-xu))>200||(abs(y2-yu))>200){
-
-                            return true;
-                        }else{
-                            commentImage.performClick();
                         }
+                    });
+                    //do something when let go
+                    if((abs(x2-xu))>200||(abs(y2-yu))>200){
+
+                        return true;
+                    }else{
+                        commentImage.performClick();
+                    }
                 }
                 return false;
             }
@@ -1138,17 +721,17 @@ public class MainActivity extends AppCompatActivity {
                     //Log.d("or", "or clicked");
 
 
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        handler.post(() -> {
-                            // UI code goes here
-                            upperImage.setVisibility(View.INVISIBLE);
-                            upperImage2.setVisibility(View.VISIBLE);
-                        });
-                        //upperImage.setColorFilter(ctx.getResources().getColor(R.color.tint_blue),PorterDuff.Mode.MULTIPLY);
-                        xu = motionEvent2.getX();
-                        yu = motionEvent2.getY();
-                        return true;
-                    }
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(() -> {
+                        // UI code goes here
+                        upperImage.setVisibility(View.INVISIBLE);
+                        upperImage2.setVisibility(View.VISIBLE);
+                    });
+                    //upperImage.setColorFilter(ctx.getResources().getColor(R.color.tint_blue),PorterDuff.Mode.MULTIPLY);
+                    xu = motionEvent2.getX();
+                    yu = motionEvent2.getY();
+                    return true;
+                }
                 else if(motionEvent2.getAction() == MotionEvent.ACTION_UP ){
                     x2=motionEvent2.getX();
                     y2=motionEvent2.getY();
@@ -1238,71 +821,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-
-//                ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
-//                ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
-//                ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
-//                ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
-//                ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
-//                ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
-//                FileOutputStream fos = null;
-//                try {
-//                    fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//
-//
-//
-//                for(int i = 0 ;i<bigTable.get(0).size();i++){
-//                    String string = "new Question({\n question:'";
-//                    string+=bigTable.get(1).get(i);
-//                    string+="',\n category:'";
-//                    string+=bigTable.get(2).get(i);
-//                    string+="',\n stats:[";
-//                    string+=male0.get(i);
-//                    string+=",";
-//                    string+=female0.get(i);
-//                    string+=",";
-//                    string+=other0.get(i);
-//                    string+=",";
-//                    string+=male1.get(i);
-//                    string+=",";
-//                    string+=female1.get(i);
-//                    string+=",";
-//                    string+=other1.get(i);
-//                    string+="],\n comments:[";
-//                    for(int j = 0 ;j<allcomments.get(i).size();j++){
-//                        string+="new Comment({\n comment:'";
-//                        string+=allcomments.get(i).get(j).getComment();
-//                        string+="',\n date:'";
-//                        string+=allcomments.get(i).get(j).getDate();
-//                        string+="',\n user:'";
-//                        string+=allcomments.get(i).get(j).getUser();
-//                        if(j==allcomments.get(i).size()-1){
-//                            string+="',\n })";
-//                        }else{
-//                            string+="',\n }),";
-//                        }
-//
-//                    }
-//                    string+="]\n }),\n";
-//
-//
-//                    try {
-//                        fos.write(string.getBytes());
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//
-//                try {
-//                    fos.close();
-//                    Log.e("file","done");
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
                 buttonPressed=0;
                 if(showstats==0) {
                     globalI=nextQuestion(max);
@@ -1314,21 +832,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         questionsTillAd=20;
                     }
-                    /*
-                    max=0;
-                    if(isDefault){
-                        max+=defaultQuestionsCount;
-                    }
-                    if(isFunny){
-                        max+=funnyQuestionsCount;
-                    }
-                    if(isGrose){
-                        max+=groseQuestionsCount;
-                    }
-                    if(isDisturbing){
-                        max+=disturbingQuestionsCount;
-                    }
-                    */
+
                     System.out.println("max "+max);
                     while(true){
                         String category =  allquestions.get(globalI).getCategory();
@@ -1341,18 +845,6 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("category "+ allquestions.get(globalI).getCategory());
 
                     System.out.println("globalI stats "+globalI);
-//                    if(genderS.equals("male")){
-//                        submitStats ss = new submitStats(globalI+1, 0, 1, 0, 0);
-//                        ss.execute((Void) null);
-//                    }else if(genderS.equals("female")){
-//                        submitStats ss = new submitStats(globalI+1, 0, 0, 1, 0);
-//                        ss.execute((Void) null);
-//                    }else{
-//                        submitStats ss = new submitStats(globalI+1, 0, 0, 0, 1);
-//                        ss.execute((Void) null);
-//                    }
-//                    GetStats gs = new GetStats();
-//                    gs.execute(getStatsUrl);
 
                     Manager manager = new Manager();
                     if(genderS.equals("male")){
@@ -1366,16 +858,16 @@ public class MainActivity extends AppCompatActivity {
                     //System.out.println(other0);
 
 
-                        String[] qst = allquestions.get(globalI).getQuestion().split("@", 2);
-                        upperText.setText(qst[0]);
-                        lowerText.setText(qst[1]);
+                    String[] qst = allquestions.get(globalI).getQuestion().split("@", 2);
+                    upperText.setText(qst[0]);
+                    lowerText.setText(qst[1]);
 
-                        currentQstUp=qst[0];
-                        currentQstDown=qst[1];
-                        System.out.println(qst[0]);
-                        System.out.println(qst[1]);
+                    currentQstUp=qst[0];
+                    currentQstDown=qst[1];
+                    System.out.println(qst[0]);
+                    System.out.println(qst[1]);
 
-                     manager.getStats(getApplicationContext(),allquestions.get(globalI).getId());
+                    manager.getStats(getApplicationContext(),allquestions.get(globalI).getId());
 
                     showstats=1;
                 }else{
@@ -1387,18 +879,6 @@ public class MainActivity extends AppCompatActivity {
                     male1i = stats.getMale1();
                     female1i = stats.getFemale1();
                     other1i = stats.getOther1();
-
-//                    try{
-//                        male0i =(male0.get(globalI));
-//                    }catch (IndexOutOfBoundsException e){
-//                        globalI=0;
-//                        male0i =(male0.get(globalI));
-//                    }
-//                    female0i=(female0.get(globalI));
-//                    other0i = (other0.get(globalI));
-//                    male1i=(male1.get(globalI));
-//                    female1i=(female1.get(globalI));
-//                    other1i=(other1.get(globalI));
 
                     float lowerstatsmale = (float) (male1i)/(float) (female1i+male1i+other1i);
                     float lowerstatfesmale = (float) (female1i)/(float) (female1i+male1i+other1i);
@@ -1483,12 +963,7 @@ public class MainActivity extends AppCompatActivity {
         lowerImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<Integer> male0 = new ArrayList<>(refreshStats("male0"));
-                ArrayList<Integer> female0 = new ArrayList<>(refreshStats("female0"));
-                ArrayList<Integer> other0 = new ArrayList<>(refreshStats("other0"));
-                ArrayList<Integer> male1 = new ArrayList<>(refreshStats("male1"));
-                ArrayList<Integer> female1 = new ArrayList<>(refreshStats("female1"));
-                ArrayList<Integer> other1 = new ArrayList<>(refreshStats("other1"));
+//
                 buttonPressed=1;
                 if(showstats==0) {
                     globalI=nextQuestion(max);
@@ -1500,21 +975,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         questionsTillAd=20;
                     }
-                    /*
-                    max=0;
-                    if(isDefault){
-                        max+=defaultQuestionsCount;
-                    }
-                    if(isFunny){
-                        max+=funnyQuestionsCount;
-                    }
-                    if(isGrose){
-                        max+=groseQuestionsCount;
-                    }
-                    if(isDisturbing){
-                        max+=disturbingQuestionsCount;
-                    }
-                    */
+
                     System.out.println("max "+max);
 
                     while(true){
@@ -1526,22 +987,8 @@ public class MainActivity extends AppCompatActivity {
                             globalI=nextQuestion(max);
                         }
                     }
-                    //System.out.println("category "+bigTable.get(2).get(globalI));
 
                     System.out.println("globalI stats "+globalI);
-//                    if(genderS.equals("male")){
-//                        submitStats ss = new submitStats(globalI+1, 1, 1, 0, 0);
-//                        ss.execute((Void) null);
-//                    }else if(genderS.equals("female")){
-//                        submitStats ss = new submitStats(globalI+1, 1, 0, 1, 0);
-//                        ss.execute((Void) null);
-//                    }else{
-//                        submitStats ss = new submitStats(globalI+1, 0, 0, 0, 1);
-//                        ss.execute((Void) null);
-//                    }
-//                    GetStats gs = new GetStats();
-//                    gs.execute(new String[] {getStatsUrl});
-
                     Manager manager = new Manager();
                     if(genderS.equals("male")){
                         manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),3);
@@ -1551,13 +998,13 @@ public class MainActivity extends AppCompatActivity {
                         manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),5);
                     }
 
-                        String[] qst = allquestions.get(globalI).getQuestion().split("@", 2);
-                        lowerText.setText(qst[1]);
-                        upperText.setText(qst[0]);
-                        currentQstUp=qst[0];
-                        currentQstDown=qst[1];
-                        System.out.println(qst[0]);
-                        System.out.println(qst[1]);
+                    String[] qst = allquestions.get(globalI).getQuestion().split("@", 2);
+                    lowerText.setText(qst[1]);
+                    upperText.setText(qst[0]);
+                    currentQstUp=qst[0];
+                    currentQstDown=qst[1];
+                    System.out.println(qst[0]);
+                    System.out.println(qst[1]);
 
                     showstats=1;
                 }else{
@@ -1570,18 +1017,6 @@ public class MainActivity extends AppCompatActivity {
                     male1i = stats.getMale1();
                     female1i = stats.getFemale1();
                     other1i = stats.getOther1();
-//                    try{
-//                        male0i =(male0.get(globalI));
-//                    }catch (IndexOutOfBoundsException e){
-//                        globalI=0;
-//                        male0i =(male0.get(globalI));
-//                    }
-//
-//                    female0i=(female0.get(globalI));
-//                    other0i = (other0.get(globalI));
-//                    male1i=(male1.get(globalI));
-//                    female1i=(female1.get(globalI));
-//                    other1i=(other1.get(globalI));
 
                     float lowerstatsmale = (float) (male1i)/(float) (female1i+male1i+other1i);
                     float lowerstatfesmale = (float) (female1i)/(float) (female1i+male1i+other1i);
@@ -1667,112 +1102,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private class GetComments extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... params) {
-            String id = params[1];
-            SP = getSharedPreferences("comments", MODE_PRIVATE);
-            System.out.println("comment id "+id);
-            try {
-
-                URL url = new URL(params[0]);
-                //String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
-                Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("question", id);
-
-                String query = builder.build().getEncodedQuery();
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-
-
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(query);
-
-                writer.flush();
-                writer.close();
-                os.close();
-                conn.connect();
-
-                /*
-                List<NameValuePair> sendparams = new ArrayList<>();
-                sendparams.add(new BasicNameValuePair("question",id));
-                UrlEncodedFormEntity ent = new UrlEncodedFormEntity(sendparams, HTTP.UTF_8);
-                httppost.setEntity(ent);
-                HttpResponse response = httpclient.execute(httppost);
-                HttpEntity entity = response.getEntity();
-                */
-                InputStream IS = conn.getInputStream();
-                // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"), 8);
-                StringBuilder sb = new StringBuilder();
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                jsonCommentResult = sb.toString();
-                System.out.println("json Comments "+jsonCommentResult);
-                conn.disconnect();
-                //System.out.println(new String(jsonStatsResult.getBytes(), "UTF-8"));
-            } catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(ctx, "Connection Error", Toast.LENGTH_LONG).show());
-                return "error";
-            }
-            return id;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            if(!(result.equals("error"))){
-                Log.d("comments",jsonCommentResult);
-                System.out.println("comments "+jsonCommentResult);
-                Intent i = new Intent(MainActivity.this,Comments.class);
-                i.putExtra("comments",jsonCommentResult);
-                i.putExtra("question",Integer.valueOf(result));
-                //startActivity(i);
-
-                allcomments.add(new ArrayList<>());
-
-                try {
-                    JSONObject jsonResponse = new JSONObject(jsonCommentResult);
-                    JSONArray jsonMainNode = jsonResponse.optJSONArray("result");
-                    for (int j = 0; j < jsonMainNode.length(); j++) {
-                        JSONObject jsonChildNode = jsonMainNode.getJSONObject(j);
-                        String tempc = jsonChildNode.optString("comment");
-                        String tempu = jsonChildNode.optString("user");
-                        String tempd = jsonChildNode.optString("date");
-
-                        // This could be MM/dd/yyyy, you original value is ambiguous
-
-                        //System.out.println("" + output.format(dateValue) + " real date " + tempd);
-                        Comment com = new Comment(tempc,tempd,tempu);
-                        //System.out.println(tempd);
-                        allcomments.get(Integer.parseInt(result)).add(com);
-
-                    }
-                }catch (JSONException e) {
-                    Toast.makeText(getApplicationContext(), "Error JSON Parser" + e.toString(),
-                            Toast.LENGTH_SHORT).show();
-                    Log.d("error ",e.toString());
-                } catch (NullPointerException e) {
-                   // Toast.makeText(this, "No internet", Toast.LENGTH_LONG).show();
-                }
-            }
-
-        }
-    }
-
-
 
     @Override
     public boolean onOptionsItemSelected( MenuItem item) {
@@ -1793,7 +1122,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
     //close Drawer on Back Button press
     @Override
     public void onBackPressed() {
@@ -1804,172 +1132,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public class submitStats extends AsyncTask<Void, Void, String> {
-
-        private  int mid;
-        private  int mchoice;
-        private  int mmale ;
-        private  int mfemale;
-        private  int mother;
-
-        submitStats(int id,int choice, int male,int female,int other) {
-            mid = id;
-            mchoice = choice;
-            mmale = male;
-            mfemale = female;
-            mother = other;
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-            String reg_url = "http://83.212.84.230/sendstats.php";
-            String response = null;
-            try {
-
-                URL url = new URL(reg_url);
-                //String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(mid), "UTF-8") +"&"+URLEncoder.encode("choice", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mchoice), "UTF-8")+"&"+URLEncoder.encode("male", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mmale), "UTF-8")+"&"+URLEncoder.encode("female", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mfemale), "UTF-8")+"&"+URLEncoder.encode("other", "UTF-8")+ "=" + URLEncoder.encode(String.valueOf(mother), "UTF-8");
-                Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("id", String.valueOf(mid))
-                        .appendQueryParameter("choice", String.valueOf(mchoice))
-                        .appendQueryParameter("male", String.valueOf(mmale))
-                        .appendQueryParameter("female", String.valueOf(mfemale))
-                        .appendQueryParameter("other", String.valueOf(mother));
-                String query = builder.build().getEncodedQuery();
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-
-
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(query);
-
-                writer.flush();
-                writer.close();
-                os.close();
-                conn.connect();
-                int responseCode=conn.getResponseCode();
-
-                /*
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoOutput(true);
-
-                //httpURLConnection.setDoInput(true);
-                OutputStream OS = httpURLConnection.getOutputStream();
-                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(OS, "UTF-8"));
-                bufferedWriter.write(data);
-                bufferedWriter.flush();
-                bufferedWriter.close();
-                OS.close();
-                */
-                InputStream IS = conn.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(IS));
-                StringBuilder result = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    result.append(line);
-                }
-                // Pass data to onPostExecute method
-                String r =(result.toString());
-                IS.close();
-
-                //Log.d("ResponseStats", httpURLConnection.getResponseMessage());
-                Log.d("ResponseStats", r);
-                response=r;
-                conn.disconnect();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-                resetGameState();
-                return "Failed";
-            }
-            if(response.contains("Success")){
-                return "Success";
-            }else{
-                return "Invalid";
-            }
-        }
-
-        @Override
-        protected void onPostExecute(final String success) {
-
-        }
-
-    }
-
-
-    private class GetStats extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... params) {
-
-            SP = getSharedPreferences("questions", MODE_PRIVATE);
-
-            try {
-                URL url = new URL(params[0]);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-
-
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                //writer.write(query);
-
-                writer.flush();
-                writer.close();
-                os.close();
-                conn.connect();
-
-                /*
-                List<NameValuePair> sendparams = new ArrayList<>();
-                UrlEncodedFormEntity ent = new UrlEncodedFormEntity(sendparams, HTTP.UTF_8);
-                httppost.setEntity(ent);
-                HttpResponse response = httpclient.execute(httppost);
-                HttpEntity entity = response.getEntity();
-                */
-                InputStream IS = conn.getInputStream();
-                // json is UTF-8 by default
-                BufferedReader reader = new BufferedReader(new InputStreamReader(IS, "UTF-8"), 8);
-                StringBuilder sb = new StringBuilder();
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                jsonStatsResult = sb.toString();
-                conn.disconnect();
-                //Log.d("result", jsonStatsResult);
-                //System.out.println(new String(jsonStatsResult.getBytes(), "UTF-8"));
-            } catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(ctx, "Connection Error", Toast.LENGTH_LONG).show());
-                resetGameState();
-                return "error";
-            }
-            return "success";
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            if(result.equals("success")) {
-                makeStatsLists();
-            }
-        }
-
-    }
 
     private Bitmap screenShot(View view) {
         Bitmap bitmap = Bitmap.createBitmap(view.getWidth(),view.getHeight(), Bitmap.Config.ARGB_8888);
