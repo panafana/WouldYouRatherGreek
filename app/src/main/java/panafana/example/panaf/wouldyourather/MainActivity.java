@@ -295,12 +295,12 @@ public class MainActivity extends AppCompatActivity {
                             case "Αστείες":isFunny=true;
                                 resetGameState();
                                 break;
-//                            case "Ανησυχητικές":isDisturbing=true;
-//                                resetGameState();
-//                                break;
-//                            case "Αηδιαστικές": isGrose=true;
-//                                resetGameState();
-//                                break;
+                            case "Ανησυχητικές":isDisturbing=true;
+                                resetGameState();
+                                break;
+                            case "Αηδιαστικές": isGrose=true;
+                                resetGameState();
+                                break;
                             case "Για ζευγάρια": isCouples=true;
                                 resetGameState();
                                 break;
