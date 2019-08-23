@@ -27,6 +27,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -39,11 +44,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import com.google.firebase.analytics.FirebaseAnalytics;
 
 /**
  * A login screen that offers login via email/password.
@@ -427,6 +427,61 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask = null;
             showProgress(false);
         }
+    }
+
+    public  void login(boolean l,String username,String response){
+        mAuthTask = null;
+        showProgress(false);
+        SharedPreferences SP = getSharedPreferences("gender",MODE_PRIVATE);
+        SharedPreferences SP2 = getSharedPreferences("user",MODE_PRIVATE);
+        SharedPreferences.Editor SPE = SP.edit();
+        SharedPreferences.Editor SPE2 = SP2.edit();
+        if (l) {
+
+            SPE2.putString("username",username);
+            SPE2.apply();
+
+            if(resp.contains("Male")){
+                SPE.putString("gender","male");
+                SPE.apply();
+                SPE.commit();
+                Log.d("gender","male");
+            }else if(resp.contains("Female")) {
+                SPE.putString("gender", "female");
+                SPE.apply();
+                SPE.commit();
+                Log.d("gender","female");
+            }else {
+                SPE.putString("gender","other");
+                SPE.apply();
+                SPE.commit();
+                Log.d("gender","other");
+            }
+
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, username);
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+
+            if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+
+                Intent i = new Intent(LoginActivity.this,MainActivity.class);
+                finish();
+                startActivity(i);
+            }else{
+                Intent i = new Intent(LoginActivity.this,MainActivityCompatibility.class);
+                finish();
+                startActivity(i);
+            }
+
+        } else{
+            mPasswordView.setError("Wrong username or password");
+            usernameView.setError("Wrong username or password");
+            usernameView.requestFocus();
+
+        }
+
+
+
     }
 }
 

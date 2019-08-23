@@ -468,6 +468,10 @@ public class MainActivity extends AppCompatActivity {
                 funnyQuestionsCount++;
             }else if(allquestions.get(i).getCategory().equals("couples")){
                 couplesQuestionsCount++;
+            }else if(allquestions.get(i).getCategory().equals("grose")){
+                groseQuestionsCount++;
+            }else if(allquestions.get(i).getCategory().equals("disturbing")){
+                disturbingQuestionsCount++;
             }
         }
 

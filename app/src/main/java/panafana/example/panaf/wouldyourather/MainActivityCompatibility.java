@@ -641,6 +641,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
                             lowerImage.setVisibility(View.VISIBLE);
                             lowerImage2.setVisibility(View.INVISIBLE);
                         }
+
                     });
                     //do something when let go
                     if((abs(x2-x))>200||(abs(y2-y))>200){

@@ -17,6 +17,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import okhttp3.ResponseBody;
+import panafana.example.panaf.wouldyourather.LoginActivity;
 import panafana.example.panaf.wouldyourather.MainActivity;
 import panafana.example.panaf.wouldyourather.R;
 import panafana.example.panaf.wouldyourather.models.Comment;
@@ -28,7 +29,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
-import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -55,8 +55,9 @@ public class Manager {
         @POST("/android/submit-comment")
         Call<ResponseBody> submitComment(@Body JsonObject obj);
 
-        @GET("/android/get-animals")
-        Call<ResponseBody> getAnimals();
+        @POST("/android/signin")
+        Call<ResponseBody> login(@Body JsonObject obj);
+
     }
 
 
@@ -171,7 +172,9 @@ public class Manager {
                            Manager manager = new Manager();
                             manager.getAllStats(context);
                         }
-                        ((MainActivity)context).playGame();
+                        if(allquestions.size()>0){
+                            ((MainActivity)context).playGame();
+                        }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -486,5 +489,65 @@ public class Manager {
         });
 
     }
+
+
+    public void login(final String username, String password, Context context, final LoginActivity activity){
+        String serverUrl = context.getString(R.string.server_url);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("username", username);
+        jsonObject.addProperty("password", password );
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface favoritesService=retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = favoritesService.login(jsonObject);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        if(response.body().string().equals("Success")){
+                            Log.i("logged in","success");
+                            try {
+                                activity.login(true,username,response.body().string());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }else{
+                            try {
+                                activity.login(false,username,response.body().string());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else {
+                    Log.e("logged in","failed");
+                    try {
+                        activity.login(false,username,response.body().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("log-in failed","failed");
+                activity.login(false,username,t.getMessage());
+            }
+        });
+
+
+    }
+
+
 
 }
