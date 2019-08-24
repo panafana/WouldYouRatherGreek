@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import panafana.example.panaf.wouldyourather.utils.Manager;
+
 import static android.Manifest.permission.READ_CONTACTS;
 
 
@@ -235,8 +237,10 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email,username, password);
-            mAuthTask.execute((Void) null);
+//            mAuthTask = new UserLoginTask(email,username, password);
+//            mAuthTask.execute((Void) null);
+            Manager manager = new Manager();
+            manager.signup(email,username,password,gender,this,this);
         }
     }
 
@@ -460,6 +464,25 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             mAuthTask = null;
             showProgress(false);
         }
+    }
+
+
+    public  void register(boolean l,String username,String gender){
+        mAuthTask = null;
+        showProgress(false);
+
+        if (l) {
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, username);
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
+            finish();
+        } else{
+            Toast.makeText(ctx, "Error", Toast.LENGTH_LONG).show();
+            mUsernameView.setError("Wrong username or password");
+        }
+
+
+
     }
 }
 

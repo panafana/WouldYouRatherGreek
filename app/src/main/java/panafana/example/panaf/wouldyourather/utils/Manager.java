@@ -20,6 +20,7 @@ import okhttp3.ResponseBody;
 import panafana.example.panaf.wouldyourather.LoginActivity;
 import panafana.example.panaf.wouldyourather.MainActivity;
 import panafana.example.panaf.wouldyourather.R;
+import panafana.example.panaf.wouldyourather.RegisterActivity;
 import panafana.example.panaf.wouldyourather.models.Comment;
 import panafana.example.panaf.wouldyourather.models.Question;
 import panafana.example.panaf.wouldyourather.models.Stats;
@@ -57,6 +58,9 @@ public class Manager {
 
         @POST("/android/signin")
         Call<ResponseBody> login(@Body JsonObject obj);
+
+        @POST("/android/signup")
+        Call<ResponseBody> signup(@Body JsonObject obj);
 
     }
 
@@ -509,7 +513,7 @@ public class Manager {
             public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
                 if (response.code() == 200) {
                     try {
-                        if(response.body().string().equals("Success")){
+                        if(response.body().string().equals("Male")||response.body().string().equals("Female")||response.body().string().equals("Non Binary")){
                             Log.i("logged in","success");
                             try {
                                 activity.login(true,username,response.body().string());
@@ -548,6 +552,61 @@ public class Manager {
 
     }
 
+    public void signup(String email,final String username, String password,String gender, Context context, final RegisterActivity activity){
+        String serverUrl = context.getString(R.string.server_url);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("username", username);
+        jsonObject.addProperty("password", password );
+        jsonObject.addProperty("email", email );
+        jsonObject.addProperty("gender", gender );
 
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface favoritesService=retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = favoritesService.signup(jsonObject);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
+
+                if (response.code() == 200) {
+
+                    try {
+                        String resp = response.body().string();
+                        if(resp.equals("Success")){
+                            Log.e("signup in","success");
+                            activity.register(true,username,resp);
+                        }else{
+                            Log.e("signup in",resp);
+                            activity.register(false,username,resp);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else {
+
+                    Log.e("signup in","failed");
+                    try {
+                        String resp = response.body().string();
+                        activity.register(false,username,resp);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("signup failed","failed");
+                activity.register(false,username,t.getMessage());
+            }
+        });
+
+
+    }
 
 }

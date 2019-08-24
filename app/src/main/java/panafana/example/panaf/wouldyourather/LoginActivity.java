@@ -45,6 +45,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import panafana.example.panaf.wouldyourather.utils.Manager;
+
 /**
  * A login screen that offers login via email/password.
  */
@@ -183,8 +185,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(username, password);
-            mAuthTask.execute((Void) null);
+//            mAuthTask = new UserLoginTask(username, password);
+//            mAuthTask.execute((Void) null);
+            Manager manager = new Manager();
+            manager.login(username,password,this,this);
         }
     }
 
@@ -429,7 +433,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
     }
 
-    public  void login(boolean l,String username,String response){
+    public  void login(boolean l,String username,String gender){
         mAuthTask = null;
         showProgress(false);
         SharedPreferences SP = getSharedPreferences("gender",MODE_PRIVATE);
@@ -441,12 +445,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             SPE2.putString("username",username);
             SPE2.apply();
 
-            if(resp.contains("Male")){
+            if(gender.equals("Male")){
                 SPE.putString("gender","male");
                 SPE.apply();
                 SPE.commit();
                 Log.d("gender","male");
-            }else if(resp.contains("Female")) {
+            }else if(gender.equals("Female")) {
                 SPE.putString("gender", "female");
                 SPE.apply();
                 SPE.commit();
