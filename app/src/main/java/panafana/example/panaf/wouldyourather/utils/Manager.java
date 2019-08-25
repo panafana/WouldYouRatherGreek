@@ -2,6 +2,7 @@ package panafana.example.panaf.wouldyourather.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import okhttp3.ResponseBody;
 import panafana.example.panaf.wouldyourather.LoginActivity;
 import panafana.example.panaf.wouldyourather.MainActivity;
+import panafana.example.panaf.wouldyourather.MainActivityCompatibility;
 import panafana.example.panaf.wouldyourather.R;
 import panafana.example.panaf.wouldyourather.RegisterActivity;
 import panafana.example.panaf.wouldyourather.models.Comment;
@@ -177,7 +179,12 @@ public class Manager {
                             manager.getAllStats(context);
                         }
                         if(allquestions.size()>0){
-                            ((MainActivity)context).playGame();
+                            if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                                ((MainActivity)context).playGame();
+                            }else{
+                                ((MainActivityCompatibility)context).playGame();
+                            }
+
                         }
 
                     } catch (JSONException e) {
