@@ -107,6 +107,11 @@ public class MainActivity extends AppCompatActivity {
     int groseQuestionsCount=0;
     int couplesQuestionsCount=0;
     int max;
+    LabeledSwitch general_switch;
+    LabeledSwitch funny_switch;
+    LabeledSwitch couples_switch;
+    LabeledSwitch difficult_switch;
+    LabeledSwitch grose_switch;
     ArrayList<ArrayList<Comment>> allcomments = new ArrayList<>();
     Manager manager;
     Context context;
@@ -162,64 +167,7 @@ public class MainActivity extends AppCompatActivity {
         manager = new Manager();
         manager.getQuestions(this,false);
 
-        LabeledSwitch general_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
-        general_switch.setOnToggledListener(new OnToggledListener() {
-            @Override
-            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
-                if(isOn){
-                    Log.e("general switch","on");
-                }else{
-                    Log.e("general switch","off");
-                }
-            }
-        });
-        LabeledSwitch funny_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
-        funny_switch.setOnToggledListener(new OnToggledListener() {
-            @Override
-            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
-                if(isOn){
-                    Log.e("funny_switch","on");
-                }else{
-                    Log.e("funny_switch","off");
-                }
-            }
-        });
 
-        LabeledSwitch couples_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
-        couples_switch.setOnToggledListener(new OnToggledListener() {
-            @Override
-            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
-                if(isOn){
-                    Log.e("couples_switch","on");
-                }else{
-                    Log.e("couples_switch","off");
-                }
-            }
-        });
-
-        LabeledSwitch difficult_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
-        difficult_switch.setOnToggledListener(new OnToggledListener() {
-            @Override
-            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
-                if(isOn){
-                    Log.e("difficult_switch","on");
-                }else{
-                    Log.e("difficult_switch","off");
-                }
-            }
-        });
-
-        LabeledSwitch grose_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
-        grose_switch.setOnToggledListener(new OnToggledListener() {
-            @Override
-            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
-                if(isOn){
-                    Log.e("grose_switch","on");
-                }else{
-                    Log.e("grose_switch","off");
-                }
-            }
-        });
 
 
 
@@ -276,15 +224,19 @@ public class MainActivity extends AppCompatActivity {
                             finish();
                         }else if(id==R.id.general){
                             Log.e("tapped","general");
-
+                            general_switch.performClick();
                         }else if(id == R.id.funny){
                             Log.e("tapped","funny");
+                            funny_switch.performClick();
                         }else if(id == R.id.difficult){
                             Log.e("tapped","difficult");
+                            difficult_switch.performClick();
                         }else if(id == R.id.couples){
                             Log.e("tapped","couples");
+                            couples_switch.performClick();
                         }else if(id == R.id.grose){
                             Log.e("tapped","grose");
+                            grose_switch.performClick();
                         }
                         // Add code here to update the UI based on the item selected
                         // For example, swap UI fragments here
@@ -297,6 +249,74 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+        general_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
+        general_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("general switch","on");
+                    isDefault=true;
+                }else{
+                    Log.e("general switch","off");
+                    isDefault=false;
+                }
+            }
+        });
+        funny_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.funny).getActionView();
+        funny_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("funny_switch","on");
+                    isFunny = true;
+                }else{
+                    Log.e("funny_switch","off");
+                    isFunny = false;
+                }
+            }
+        });
+
+        couples_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.couples).getActionView();
+        couples_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("couples_switch","on");
+                    isCouples = true;
+                }else{
+                    Log.e("couples_switch","off");
+                    isCouples = false;
+                }
+            }
+        });
+
+        difficult_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.difficult).getActionView();
+        difficult_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("difficult_switch","on");
+                    isDisturbing = true;
+                }else{
+                    Log.e("difficult_switch","off");
+                    isDisturbing = false;
+                }
+            }
+        });
+
+        grose_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.grose).getActionView();
+        grose_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("grose_switch","on");
+                    isGrose = true;
+                }else{
+                    Log.e("grose_switch","off");
+                    isGrose = false;
+                }
+            }
+        });
 
         View header = navigationView.getHeaderView(0);
         TextView nav_header = header.findViewById(R.id.nav_header_textView);
