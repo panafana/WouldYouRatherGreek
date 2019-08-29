@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group>
+        <item
+            android:id="@+id/general"
+            android:title="Γενικές"
+            app:actionLayout = "@layout/my_switch"
+            android:orderInCategory="5"/>
+        <item
+            android:id="@+id/funny"
+            android:title="Αστείες"
+            app:actionLayout = "@layout/my_switch"
+            android:orderInCategory="6"/>
+        <item
+            android:id="@+id/difficult"
+            android:title="Δύσκολες"
+            app:actionLayout = "@layout/my_switch"
+            android:orderInCategory="7"/>
+        <item
+            android:id="@+id/couples"
+            android:title="Για ζευγάρια"
+            app:actionLayout = "@layout/my_switch"
+            android:orderInCategory="8"/>
+        <item
+            android:id="@+id/grose"
+            android:title="Αηδιαστικές"
+            app:actionLayout = "@layout/my_switch"
+            android:orderInCategory="9"/>
+
+    </group>
     <group>
         <item
             android:id="@+id/reset"

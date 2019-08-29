@@ -42,6 +42,9 @@ import androidx.core.widget.TextViewCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
+import com.github.angads25.toggle.interfaces.OnToggledListener;
+import com.github.angads25.toggle.model.ToggleableView;
+import com.github.angads25.toggle.widget.LabeledSwitch;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -159,7 +162,69 @@ public class MainActivity extends AppCompatActivity {
         manager = new Manager();
         manager.getQuestions(this,false);
 
-         navigationView = findViewById(R.id.nav_view);
+        LabeledSwitch general_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
+        general_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("general switch","on");
+                }else{
+                    Log.e("general switch","off");
+                }
+            }
+        });
+        LabeledSwitch funny_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
+        funny_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("funny_switch","on");
+                }else{
+                    Log.e("funny_switch","off");
+                }
+            }
+        });
+
+        LabeledSwitch couples_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
+        couples_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("couples_switch","on");
+                }else{
+                    Log.e("couples_switch","off");
+                }
+            }
+        });
+
+        LabeledSwitch difficult_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
+        difficult_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("difficult_switch","on");
+                }else{
+                    Log.e("difficult_switch","off");
+                }
+            }
+        });
+
+        LabeledSwitch grose_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.general).getActionView();
+        grose_switch.setOnToggledListener(new OnToggledListener() {
+            @Override
+            public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                if(isOn){
+                    Log.e("grose_switch","on");
+                }else{
+                    Log.e("grose_switch","off");
+                }
+            }
+        });
+
+
+
+
+        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -170,19 +235,17 @@ public class MainActivity extends AppCompatActivity {
                         // close drawer when item is tapped
                         int id = menuItem.getItemId();
                         //System.out.println("menu id "+id);
-                        if(id>9){
+
+
+                        //noinspection SimplifiableIfStatement
+                        if (id == R.id.reset) {
+                            resetGameState();
                             new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     mDrawerLayout.closeDrawers();
                                 }
                             }, 200);
-
-                        }
-
-                        //noinspection SimplifiableIfStatement
-                        if (id == R.id.reset) {
-                            resetGameState();
                         } else if (id == R.id.submitQuestion) {
                             Intent i = new Intent(MainActivity.this, SubmitQuestion.class);
                             startActivity(i);
@@ -197,6 +260,12 @@ public class MainActivity extends AppCompatActivity {
                                 upperText.setTextColor(getResources().getColor(R.color.text_color));
                                 lowerText.setTextColor(getResources().getColor(R.color.text_color));
                             }
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mDrawerLayout.closeDrawers();
+                                }
+                            }, 200);
                         } else if (id == R.id.logout) {
                             SharedPreferences SP = getSharedPreferences("user", MODE_PRIVATE);
                             SharedPreferences.Editor SPE = SP.edit();
@@ -205,9 +274,17 @@ public class MainActivity extends AppCompatActivity {
                             Intent i = new Intent(MainActivity.this, LoginActivity.class);
                             startActivity(i);
                             finish();
-                        }else if(id<10){
+                        }else if(id==R.id.general){
+                            Log.e("tapped","general");
 
-
+                        }else if(id == R.id.funny){
+                            Log.e("tapped","funny");
+                        }else if(id == R.id.difficult){
+                            Log.e("tapped","difficult");
+                        }else if(id == R.id.couples){
+                            Log.e("tapped","couples");
+                        }else if(id == R.id.grose){
+                            Log.e("tapped","grose");
                         }
                         // Add code here to update the UI based on the item selected
                         // For example, swap UI fragments here
@@ -217,6 +294,10 @@ public class MainActivity extends AppCompatActivity {
 
 
                 });
+
+
+
+
         View header = navigationView.getHeaderView(0);
         TextView nav_header = header.findViewById(R.id.nav_header_textView);
         SharedPreferences SP3 = getSharedPreferences("user", MODE_PRIVATE);
@@ -228,6 +309,8 @@ public class MainActivity extends AppCompatActivity {
         progress1.setProgressBackgroundColor(Color.parseColor("#808080"));
         progress1.setMax(100);
         progress1.setProgress(50);
+
+
 
         String[] uniqueCategoriesArray = getResources().getStringArray(R.array.categories);
         Menu menu = navigationView.getMenu();
