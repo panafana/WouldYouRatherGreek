@@ -23,7 +23,6 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -107,15 +106,23 @@ public class MainActivity extends AppCompatActivity {
     int groseQuestionsCount=0;
     int couplesQuestionsCount=0;
     int max;
+    boolean first_open = true;
+    ArrayList<Question> defaultQuestions = new ArrayList<>();
+    ArrayList<Question> couplesQuestions = new ArrayList<>();
+    ArrayList<Question> groseQuestions = new ArrayList<>();
+    ArrayList<Question> disturbingQuestions = new ArrayList<>();
+    ArrayList<Question> funnyQuestions = new ArrayList<>();
+    ArrayList<Question> runningQuestions = new ArrayList<>();
     LabeledSwitch general_switch;
     LabeledSwitch funny_switch;
     LabeledSwitch couples_switch;
     LabeledSwitch difficult_switch;
     LabeledSwitch grose_switch;
+
     ArrayList<ArrayList<Comment>> allcomments = new ArrayList<>();
     Manager manager;
     Context context;
-
+    ArrayList<Question> allquestions;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,6 +174,11 @@ public class MainActivity extends AppCompatActivity {
         manager = new Manager();
         manager.getQuestions(this,false);
 
+        isDefault = SP2.getBoolean("isDefault",true);
+        isFunny = SP2.getBoolean("isFunny",false);
+        isDisturbing = SP2.getBoolean("isDisturbing",false);
+        isGrose = SP2.getBoolean("isGrose",false);
+        isCouples = SP2.getBoolean("isCouples",false);
 
 
 
@@ -253,26 +265,102 @@ public class MainActivity extends AppCompatActivity {
         general_switch.setOnToggledListener(new OnToggledListener() {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                SP2.edit().putBoolean("isDefault",isOn).apply();
                 if(isOn){
                     Log.e("general switch","on");
                     isDefault=true;
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
                 }else{
                     Log.e("general switch","off");
-                    isDefault=false;
+                    isDefault = false;
+                    if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
+                        general_switch.performClick();
+                    }
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
+
                 }
+
             }
         });
         funny_switch =(LabeledSwitch) navigationView.getMenu().findItem(R.id.funny).getActionView();
         funny_switch.setOnToggledListener(new OnToggledListener() {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                SP2.edit().putBoolean("isFunny",isOn).apply();
                 if(isOn){
                     Log.e("funny_switch","on");
                     isFunny = true;
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
                 }else{
                     Log.e("funny_switch","off");
                     isFunny = false;
+                    if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
+                        general_switch.performClick();
+                    }
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
+
                 }
+
             }
         });
 
@@ -280,13 +368,51 @@ public class MainActivity extends AppCompatActivity {
         couples_switch.setOnToggledListener(new OnToggledListener() {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                SP2.edit().putBoolean("isCouples",isOn).apply();
                 if(isOn){
                     Log.e("couples_switch","on");
                     isCouples = true;
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
                 }else{
                     Log.e("couples_switch","off");
                     isCouples = false;
+                    if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
+                        general_switch.performClick();
+                    }
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
+
                 }
+
             }
         });
 
@@ -294,13 +420,51 @@ public class MainActivity extends AppCompatActivity {
         difficult_switch.setOnToggledListener(new OnToggledListener() {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                SP2.edit().putBoolean("isDisturbing",isOn).apply();
                 if(isOn){
                     Log.e("difficult_switch","on");
                     isDisturbing = true;
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
                 }else{
                     Log.e("difficult_switch","off");
                     isDisturbing = false;
+                    if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
+                        general_switch.performClick();
+                    }
+
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
                 }
+
             }
         });
 
@@ -308,15 +472,56 @@ public class MainActivity extends AppCompatActivity {
         grose_switch.setOnToggledListener(new OnToggledListener() {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+
+                SP2.edit().putBoolean("isGrose",isOn).apply();
                 if(isOn){
                     Log.e("grose_switch","on");
                     isGrose = true;
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
                 }else{
-                    Log.e("grose_switch","off");
                     isGrose = false;
+                    if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
+                        general_switch.performClick();
+                    }
+                    Log.e("grose_switch","off");
+                    runningQuestions.clear();
+                    if(isDefault){
+                        runningQuestions.addAll(defaultQuestions);
+                    }
+                    if(isCouples){
+                        runningQuestions.addAll(couplesQuestions);
+                    }
+                    if(isDisturbing){
+                        runningQuestions.addAll(disturbingQuestions);
+                    }
+                    if(isFunny){
+                        runningQuestions.addAll(funnyQuestions);
+                    }
+                    if(isGrose){
+                        runningQuestions.addAll(groseQuestions);
+                    }
                 }
+
             }
         });
+
+
+
 
         View header = navigationView.getHeaderView(0);
         TextView nav_header = header.findViewById(R.id.nav_header_textView);
@@ -332,81 +537,81 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        String[] uniqueCategoriesArray = getResources().getStringArray(R.array.categories);
-        Menu menu = navigationView.getMenu();
-        Menu submenuCategories = menu.addSubMenu(Menu.NONE,Menu.NONE,0,"Κατηγορίες ερωτήσεων");
-
-        for(int i=0;i<uniqueCategoriesArray.length;i++){
-            submenuCategories.add(Menu.NONE,i,Menu.NONE,(uniqueCategoriesArray[i])).setCheckable(true).setIcon(R.drawable.ic_check_box_outline_blank_black_24dp).setChecked(false).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem menuItem) {
-                    System.out.println(menuItem.toString());
-                    if(menuItem.isChecked()){
-                        menuItem.setIcon(R.drawable.ic_check_box_outline_blank_black_24dp);
-                        switch (menuItem.toString()){
-                            case "Γενικές":isDefault=false;
-                                resetGameState();
-                                break;
-                            case "Αστείες":isFunny=false;
-                                resetGameState();
-                                break;
-                            case "Ανησυχητικές":isDisturbing=false;
-                                resetGameState();
-                                break;
-                            case "Αηδιαστικές": isGrose=false;
-                                resetGameState();
-                                break;
-                            case "Για ζευγάρια": isCouples=false;
-                                resetGameState();
-                                break;
-                        }
-                        //menuItem.setChecked(false);
-                        if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
-                            isDefault=true;
-                            max=defaultQuestionsCount;
-                            submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
-                        }
-                        System.out.println("max "+max);
-                        System.out.println("default "+isDefault);
-                        System.out.println("funny "+isFunny);
-                        System.out.println("disturbing "+isDisturbing);
-                        System.out.println("grose "+isGrose);
-                        System.out.println("couples "+isCouples);
-
-                    }else{
-
-                        menuItem.setIcon(R.drawable.ic_check_box_black_24dp);
-                        switch (menuItem.toString()){
-                            case "Γενικές":isDefault=true;
-                                resetGameState();
-                                break;
-                            case "Αστείες":isFunny=true;
-                                resetGameState();
-                                break;
-                            case "Ανησυχητικές":isDisturbing=true;
-                                resetGameState();
-                                break;
-                            case "Αηδιαστικές": isGrose=true;
-                                resetGameState();
-                                break;
-                            case "Για ζευγάρια": isCouples=true;
-                                resetGameState();
-                                break;
-                        }
-                        System.out.println("max "+max);
-                        System.out.println("default "+isDefault);
-                        System.out.println("funny "+isFunny);
-                        System.out.println("disturbing "+isDisturbing);
-                        System.out.println("grose "+isGrose);
-                        System.out.println("couples "+isCouples);
-                        //menuItem.setChecked(true);
-                    }
-                    return false;
-                }
-            });
-        }
-        submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
-
+//        String[] uniqueCategoriesArray = getResources().getStringArray(R.array.categories);
+//        Menu menu = navigationView.getMenu();
+//        Menu submenuCategories = menu.addSubMenu(Menu.NONE,Menu.NONE,0,"Κατηγορίες ερωτήσεων");
+//
+//        for(int i=0;i<uniqueCategoriesArray.length;i++){
+//            submenuCategories.add(Menu.NONE,i,Menu.NONE,(uniqueCategoriesArray[i])).setCheckable(true).setIcon(R.drawable.ic_check_box_outline_blank_black_24dp).setChecked(false).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+//                @Override
+//                public boolean onMenuItemClick(MenuItem menuItem) {
+//                    System.out.println(menuItem.toString());
+//                    if(menuItem.isChecked()){
+//                        menuItem.setIcon(R.drawable.ic_check_box_outline_blank_black_24dp);
+//                        switch (menuItem.toString()){
+//                            case "Γενικές":isDefault=false;
+//                                resetGameState();
+//                                break;
+//                            case "Αστείες":isFunny=false;
+//                                resetGameState();
+//                                break;
+//                            case "Ανησυχητικές":isDisturbing=false;
+//                                resetGameState();
+//                                break;
+//                            case "Αηδιαστικές": isGrose=false;
+//                                resetGameState();
+//                                break;
+//                            case "Για ζευγάρια": isCouples=false;
+//                                resetGameState();
+//                                break;
+//                        }
+//                        //menuItem.setChecked(false);
+//                        if(!isDefault&&!isFunny&&!isDisturbing&&!isGrose&&!isCouples){
+//                            isDefault=true;
+//                            max=defaultQuestionsCount;
+//                            submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
+//                        }
+//                        System.out.println("max "+max);
+//                        System.out.println("default "+isDefault);
+//                        System.out.println("funny "+isFunny);
+//                        System.out.println("disturbing "+isDisturbing);
+//                        System.out.println("grose "+isGrose);
+//                        System.out.println("couples "+isCouples);
+//
+//                    }else{
+//
+//                        menuItem.setIcon(R.drawable.ic_check_box_black_24dp);
+//                        switch (menuItem.toString()){
+//                            case "Γενικές":isDefault=true;
+//                                resetGameState();
+//                                break;
+//                            case "Αστείες":isFunny=true;
+//                                resetGameState();
+//                                break;
+//                            case "Ανησυχητικές":isDisturbing=true;
+//                                resetGameState();
+//                                break;
+//                            case "Αηδιαστικές": isGrose=true;
+//                                resetGameState();
+//                                break;
+//                            case "Για ζευγάρια": isCouples=true;
+//                                resetGameState();
+//                                break;
+//                        }
+//                        System.out.println("max "+max);
+//                        System.out.println("default "+isDefault);
+//                        System.out.println("funny "+isFunny);
+//                        System.out.println("disturbing "+isDisturbing);
+//                        System.out.println("grose "+isGrose);
+//                        System.out.println("couples "+isCouples);
+//                        //menuItem.setChecked(true);
+//                    }
+//                    return false;
+//                }
+//            });
+//        }
+//        submenuCategories.getItem(0).setChecked(true).setIcon(R.drawable.ic_check_box_black_24dp);
+//
 
 
         //permissions
@@ -445,67 +650,51 @@ public class MainActivity extends AppCompatActivity {
 
     void resetGameState (){
         globalI = 0;
-        SP2 = getSharedPreferences("gameState", MODE_PRIVATE);
-        SharedPreferences.Editor editor = SP2.edit();
-        editor.putString("usedIds",null);
-        editor.apply();
-        editor.commit();
+        runningQuestions.clear();
+        if(isDefault){
+            runningQuestions.addAll(defaultQuestions);
+        }
+        if(isCouples){
+            runningQuestions.addAll(couplesQuestions);
+        }
+        if(isDisturbing){
+            runningQuestions.addAll(disturbingQuestions);
+        }
+        if(isFunny){
+            runningQuestions.addAll(funnyQuestions);
+        }
+        if(isGrose){
+            runningQuestions.addAll(groseQuestions);
+        }
+
     }
 
 
-    int nextQuestion(int maxQ){
-        Gson gson = new Gson();
-        String json = SP2.getString("usedIds", null);
-        Type type = new TypeToken<ArrayList<String>>() {
-        }.getType();
-        ArrayList<String> set = gson.fromJson(json, type);
-
-        final int min = 0;
-        final int maxi = maxQ;
+    int nextQuestion(){
         int random=0 ;
-        try{
-            random  = new Random().nextInt((maxi - min) + 1) + min;
+        if(runningQuestions.size()>1){
+            try{
+                random  = new Random().nextInt(runningQuestions.size()-1) ;
 
-        }catch (IllegalArgumentException e){
-            random=0;
-        }
-
-        System.out.println("random value "+random);
-        if(json==null){
-            ArrayList<String> set2 = new ArrayList<>();
-            set2.add(String.valueOf(random));
-            Gson gson1 = new Gson();
-            String json1 = gson1.toJson(set2);
-            SharedPreferences.Editor editor = SP2.edit();
-            editor.putString("usedIds",json1);
-            editor.apply();
-            editor.commit();
-            return random;
-        }
-
-        while(set.contains(String.valueOf(random))){
-            random = new Random().nextInt((maxi - min) + 1) + min;
-            System.out.println("random value "+random);
-
-            if(set.size()>maxi){
-                Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
-                resetGameState();
-                break;
+            }catch (IllegalArgumentException e){
+                random=0;
             }
+            runningQuestions.remove(random);
+            return random;
+
+        }else{
+            Toast.makeText(ctx, "Τέλος ερωτήσεων", Toast.LENGTH_LONG).show();
+            resetGameState();
+            try{
+                random  = new Random().nextInt(runningQuestions.size()-1) ;
+
+            }catch (IllegalArgumentException e){
+                random=0;
+            }
+            runningQuestions.remove(random);
+            return random;
+
         }
-
-        set.add(String.valueOf(random));
-//        for(int i=0;i<set.size();i++){
-//            System.out.println("UsedQ "+set.get(i));
-//        }
-
-        Gson gson1 = new Gson();
-        String json1 = gson1.toJson(set);
-        SharedPreferences.Editor editor = SP2.edit();
-        editor.putString("usedIds",json1);
-        editor.apply();
-        editor.commit();
-        return random;
     }
 
 
@@ -521,7 +710,7 @@ public class MainActivity extends AppCompatActivity {
         Gson gson33 = new Gson();
         Type type33 = new TypeToken<ArrayList<Question>>() {
         }.getType();
-        ArrayList<Question> allquestions = gson33.fromJson(temp, type33);
+        allquestions = gson33.fromJson(temp, type33);
 
 
 
@@ -548,13 +737,7 @@ public class MainActivity extends AppCompatActivity {
         TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(lowerText,5,30,2, TypedValue.COMPLEX_UNIT_SP);
 
 
-        SharedPreferences SP5 = getSharedPreferences("categories", MODE_PRIVATE);
-        isDefault = SP5.getBoolean("isDefault",true);
-        isFunny = SP5.getBoolean("isFunny",false);
-        isDisturbing = SP5.getBoolean("isDisturbing",false);
-        isGrose = SP5.getBoolean("isGrose",false);
-        isCouples = SP5.getBoolean("isCouples",false);
-        isNSFW = SP5.getBoolean("isNSFW",false);
+
 
 
         defaultQuestionsCount=0;
@@ -566,23 +749,17 @@ public class MainActivity extends AppCompatActivity {
 
         for(int i=0;i<allquestions.size();i++){
             if(allquestions.get(i).getCategory().equals("default")){
-                defaultQuestionsCount++;
+                defaultQuestions.add(allquestions.get(i));
             }else if(allquestions.get(i).getCategory().equals("funny")){
-                funnyQuestionsCount++;
+                funnyQuestions.add(allquestions.get(i));
             }else if(allquestions.get(i).getCategory().equals("couples")){
-                couplesQuestionsCount++;
+                couplesQuestions.add(allquestions.get(i));
             }else if(allquestions.get(i).getCategory().equals("grose")){
-                groseQuestionsCount++;
+                groseQuestions.add(allquestions.get(i));
             }else if(allquestions.get(i).getCategory().equals("disturbing")){
-                disturbingQuestionsCount++;
+                disturbingQuestions.add(allquestions.get(i));
             }
         }
-
-        System.out.println("default questions "+defaultQuestionsCount);
-        System.out.println("funny questions "+funnyQuestionsCount);
-        System.out.println("disturbing questions "+disturbingQuestionsCount);
-        System.out.println("grose questions "+groseQuestionsCount);
-        System.out.println("couples questions "+couplesQuestionsCount);
 
 
 
@@ -594,22 +771,27 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences SP4 = getSharedPreferences("stats",MODE_PRIVATE);
         final float coeff = 100f*(1f/allquestions.size());
-        max=defaultQuestionsCount+funnyQuestionsCount+groseQuestionsCount+disturbingQuestionsCount+couplesQuestionsCount-2;
-
-
-        globalI=nextQuestion(max);
-        while(true){
-            String category = allquestions.get(globalI).getCategory();
-            if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
-                break;
-            }else{
-                globalI=nextQuestion(max);
-            }
+        max = 0;
+        if(isDefault){
+            runningQuestions.addAll(defaultQuestions);
         }
-        System.out.println("category "+ allquestions.get(globalI).getCategory());
-        System.out.println("first gloabI "+globalI);
+        if(isCouples){
+            runningQuestions.addAll(couplesQuestions);
+        }
+        if(isDisturbing){
+            runningQuestions.addAll(disturbingQuestions);
+        }
+        if(isFunny){
+            runningQuestions.addAll(funnyQuestions);
+        }
+        if(isGrose){
+            runningQuestions.addAll(groseQuestions);
+        }
 
-        String[] qst =  allquestions.get(globalI).getQuestion().split("@",2);
+
+        globalI=nextQuestion();
+
+        String[] qst =  runningQuestions.get(globalI).getQuestion().split("@",2);
         System.out.println(qst[0]);
         System.out.println(qst[1]);
         upperText.setText(qst[0]);
@@ -664,6 +846,12 @@ public class MainActivity extends AppCompatActivity {
 //                        +allquestions.get(i).getStats().getFemale1()+" "
 //                        +allquestions.get(i).getStats().getOther1());
 //            }
+
+            Log.e("isDefault", String.valueOf(isDefault));
+            Log.e("isFunny", String.valueOf(isFunny));
+            Log.e("isDisturbing", String.valueOf(isDisturbing));
+            Log.e("isGrose", String.valueOf(isGrose));
+            Log.e("isCouples", String.valueOf(isCouples));
 
         });
 
@@ -802,15 +990,17 @@ public class MainActivity extends AppCompatActivity {
 //                    GetComments gc = new GetComments();
 //                    gc.execute(commentsUrl,Integer.toString(i));
 //                }
-
-
+                SharedPreferences SP35 = getSharedPreferences("questions", MODE_PRIVATE);
+                Gson gson1 = new Gson();
+                String json1 = gson1.toJson(allquestions);
+                SP35.edit().putString("runningQuestions",json1).apply();
 
                 Manager manager = new Manager();
-                manager.getComments(context,allquestions.get(globalI).getId());
+                manager.getComments(context,runningQuestions.get(globalI).getId());
                 Log.d("or","clicked");
 
                 Intent i = new Intent(MainActivity.this,Comments.class);
-                i.putExtra("id",allquestions.get(globalI).getId());
+                i.putExtra("id",runningQuestions.get(globalI).getId());
                 i.putExtra("globalI",globalI);
                 startActivity(i);
             }
@@ -930,7 +1120,7 @@ public class MainActivity extends AppCompatActivity {
 
                 buttonPressed=0;
                 if(showstats==0) {
-                    globalI=nextQuestion(max);
+                    globalI=nextQuestion();
 
                     questionsTillAd--;
                     if(questionsTillAd<0){
@@ -940,32 +1130,18 @@ public class MainActivity extends AppCompatActivity {
                         questionsTillAd=20;
                     }
 
-                    System.out.println("max "+max);
-                    while(true){
-                        String category =  allquestions.get(globalI).getCategory();
-                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
-                            break;
-                        }else{
-                            globalI=nextQuestion(max);
-                        }
-                    }
-                    System.out.println("category "+ allquestions.get(globalI).getCategory());
-
-                    System.out.println("globalI stats "+globalI);
-
                     Manager manager = new Manager();
                     if(genderS.equals("male")){
-                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),0);
+                        manager.updateStats(getApplicationContext(),runningQuestions.get(globalI).getId(),0);
                     }else if(genderS.equals("female")){
-                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),1);
+                        manager.updateStats(getApplicationContext(),runningQuestions.get(globalI).getId(),1);
                     }else{
-                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),2);
+                        manager.updateStats(getApplicationContext(),runningQuestions.get(globalI).getId(),2);
                     }
 
                     //System.out.println(other0);
 
-
-                    String[] qst = allquestions.get(globalI).getQuestion().split("@", 2);
+                    String[] qst = runningQuestions.get(globalI).getQuestion().split("@", 2);
                     upperText.setText(qst[0]);
                     lowerText.setText(qst[1]);
 
@@ -974,12 +1150,12 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println(qst[0]);
                     System.out.println(qst[1]);
 
-                    manager.getStats(getApplicationContext(),allquestions.get(globalI).getId());
+                    manager.getStats(getApplicationContext(),runningQuestions.get(globalI).getId());
 
                     showstats=1;
                 }else{
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
-                    Stats stats = allquestions.get(globalI).getStats();
+                    Stats stats = runningQuestions.get(globalI).getStats();
                     male0i = stats.getMale0();
                     female0i = stats.getFemale0();
                     other0i = stats.getOther0();
@@ -1073,7 +1249,7 @@ public class MainActivity extends AppCompatActivity {
 //
                 buttonPressed=1;
                 if(showstats==0) {
-                    globalI=nextQuestion(max);
+                    globalI=nextQuestion();
 
                     questionsTillAd--;
                     if(questionsTillAd<0){
@@ -1083,29 +1259,19 @@ public class MainActivity extends AppCompatActivity {
                         questionsTillAd=20;
                     }
 
-                    System.out.println("max "+max);
 
-                    while(true){
-                        //String category = bigTable.get(2).get(globalI);
-                        String category =  allquestions.get(globalI).getCategory();
-                        if((isDefault&&category.equals("default"))||(isDisturbing&&category.equals("disturbing"))||(isFunny&&category.equals("funny"))||(isGrose&&category.equals("grose"))||(isCouples&&category.equals("couples"))){
-                            break;
-                        }else{
-                            globalI=nextQuestion(max);
-                        }
-                    }
 
                     System.out.println("globalI stats "+globalI);
                     Manager manager = new Manager();
                     if(genderS.equals("male")){
-                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),3);
+                        manager.updateStats(getApplicationContext(),runningQuestions.get(globalI).getId(),3);
                     }else if(genderS.equals("female")){
-                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),4);
+                        manager.updateStats(getApplicationContext(),runningQuestions.get(globalI).getId(),4);
                     }else{
-                        manager.updateStats(getApplicationContext(),allquestions.get(globalI).getId(),5);
+                        manager.updateStats(getApplicationContext(),runningQuestions.get(globalI).getId(),5);
                     }
 
-                    String[] qst = allquestions.get(globalI).getQuestion().split("@", 2);
+                    String[] qst = runningQuestions.get(globalI).getQuestion().split("@", 2);
                     lowerText.setText(qst[1]);
                     upperText.setText(qst[0]);
                     currentQstUp=qst[0];
@@ -1117,7 +1283,7 @@ public class MainActivity extends AppCompatActivity {
                 }else{
 
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
-                    Stats stats = allquestions.get(globalI).getStats();
+                    Stats stats = runningQuestions.get(globalI).getStats();
                     male0i = stats.getMale0();
                     female0i = stats.getFemale0();
                     other0i = stats.getOther0();
@@ -1221,6 +1387,38 @@ public class MainActivity extends AppCompatActivity {
 
                 if(id== android.R.id.home){
                     mDrawerLayout.openDrawer(GravityCompat.START);
+
+
+                if(first_open) {
+                    if (isDefault) {
+                        isDefault = false;
+                        general_switch.setOn(false);
+                        general_switch.performClick();
+                    }
+                    if (isCouples) {
+                        isCouples = false;
+                        couples_switch.setOn(false);
+                        couples_switch.performClick();
+                    }
+                    if (isDisturbing) {
+                        isDisturbing = false;
+                        difficult_switch.setOn(false);
+                        difficult_switch.performClick();
+                    }
+                    if (isFunny) {
+                        isFunny = false;
+                        funny_switch.setOn(false);
+                        funny_switch.performClick();
+                    }
+                    if (isGrose) {
+                        isGrose = false;
+                        grose_switch.setOn(false);
+                        grose_switch.performClick();
+                    }
+
+                    invalidateOptionsMenu();
+                    first_open = false;
+                }
                     return true;
 
                 }
@@ -1237,6 +1435,18 @@ public class MainActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        SharedPreferences SP = getSharedPreferences("gameState",0);
+        isDefault = SP.getBoolean("isDefault",true);
+        isFunny = SP.getBoolean("isFunny",false);
+        isDisturbing = SP.getBoolean("isDisturbing",false);
+        isGrose = SP.getBoolean("isGrose",false);
+        isCouples = SP.getBoolean("isCouples",false);
+
     }
 
 

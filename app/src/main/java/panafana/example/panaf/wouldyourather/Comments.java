@@ -2,8 +2,6 @@ package panafana.example.panaf.wouldyourather;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -11,7 +9,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -20,22 +17,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.apache.http.client.ClientProtocolException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,7 +33,7 @@ public class Comments extends AppCompatActivity {
     ListView listView;
     Context ctx;
     private FirebaseAnalytics mFirebaseAnalytics;
-    ArrayList<Question> allquestions;
+    ArrayList<Question> runningQuestions;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,11 +47,11 @@ public class Comments extends AppCompatActivity {
         int globalI = getIntent().getIntExtra("globalI",0);
         listView = findViewById(R.id.listView1);
         final SharedPreferences SP = getApplicationContext().getSharedPreferences("questions", MODE_PRIVATE);
-        final String temp = SP.getString("allquestions",null);
+        final String temp = SP.getString("runningQuestions",null);
         Gson gson = new Gson();
         Type type = new TypeToken<ArrayList<Question>>() {
         }.getType();
-        allquestions = gson.fromJson(temp, type);
+        runningQuestions = gson.fromJson(temp, type);
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,10 +74,10 @@ public class Comments extends AppCompatActivity {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     String currentDateandTime = sdf.format(new Date());
                     Log.e("now",currentDateandTime);
-                    ArrayList<Comment> coms = allquestions.get(globalI).getComments();
+                    ArrayList<Comment> coms = runningQuestions.get(globalI).getComments();
                     Comment com = new Comment(cmt,currentDateandTime,user);
                     coms.add(com);
-                    allquestions.get(globalI).setComments(coms);
+                    runningQuestions.get(globalI).setComments(coms);
                     adapter.updateAdapter(coms);
                     adapter.notifyDataSetChanged();
                     manager.submitComment(getApplicationContext(),com,id);
@@ -141,7 +123,7 @@ public class Comments extends AppCompatActivity {
 
 
 
-        adapter = new MyListAdapter(this,allquestions.get(globalI).getComments());
+        adapter = new MyListAdapter(this,runningQuestions.get(globalI).getComments());
 
         //itemsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, comments);
         //listView.setAdapter(itemsAdapter);
