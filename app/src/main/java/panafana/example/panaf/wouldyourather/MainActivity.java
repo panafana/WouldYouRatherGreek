@@ -1155,7 +1155,14 @@ public class MainActivity extends AppCompatActivity {
                     showstats=1;
                 }else{
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
-                    Stats stats = runningQuestions.get(globalI).getStats();
+                    Stats stats;
+                    try{
+                        stats = runningQuestions.get(globalI).getStats();
+                    }catch (Exception e){
+                        resetGameState();
+                        stats = runningQuestions.get(globalI).getStats();
+                    }
+
                     male0i = stats.getMale0();
                     female0i = stats.getFemale0();
                     other0i = stats.getOther0();
@@ -1283,7 +1290,13 @@ public class MainActivity extends AppCompatActivity {
                 }else{
 
                     int male0i ,female0i ,other0i ,male1i ,female1i ,other1i;
-                    Stats stats = runningQuestions.get(globalI).getStats();
+                    Stats stats;
+                    try{
+                        stats = runningQuestions.get(globalI).getStats();
+                    }catch (Exception e){
+                        resetGameState();
+                        stats = runningQuestions.get(globalI).getStats();
+                    }
                     male0i = stats.getMale0();
                     female0i = stats.getFemale0();
                     other0i = stats.getOther0();

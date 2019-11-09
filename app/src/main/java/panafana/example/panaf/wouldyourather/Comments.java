@@ -122,8 +122,12 @@ public class Comments extends AppCompatActivity {
 //        }
 
 
+        if(runningQuestions.get(globalI).getComments()!=null){
+            adapter = new MyListAdapter(this,runningQuestions.get(globalI).getComments());
+        }else{
+            adapter = new MyListAdapter(this, new ArrayList<>());
+        }
 
-        adapter = new MyListAdapter(this,runningQuestions.get(globalI).getComments());
 
         //itemsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, comments);
         //listView.setAdapter(itemsAdapter);

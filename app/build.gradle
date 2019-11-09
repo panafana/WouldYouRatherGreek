@@ -8,8 +8,8 @@ android {
         applicationId "panafana.example.panaf.wouldyourather"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 13
-        versionName "2.1"
+        versionCode 15
+        versionName "2.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

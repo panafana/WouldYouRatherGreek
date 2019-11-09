@@ -661,7 +661,8 @@ public class MainActivityCompatibility extends AppCompatActivity {
         upperImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Bundle bundle = new Bundle();
+                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LEVEL_UP, bundle);
                 buttonPressed=0;
                 if(showstats==0) {
                     globalI=nextQuestion(max);
@@ -780,7 +781,8 @@ public class MainActivityCompatibility extends AppCompatActivity {
         lowerImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//
+                Bundle bundle = new Bundle();
+                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LEVEL_UP, bundle);
                 buttonPressed=1;
                 if(showstats==0) {
                     globalI=nextQuestion(max);
