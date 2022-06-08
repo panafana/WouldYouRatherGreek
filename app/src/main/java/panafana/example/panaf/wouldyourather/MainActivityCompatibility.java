@@ -32,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,10 +41,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.TextViewCompat;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -79,6 +84,7 @@ public class MainActivityCompatibility extends AppCompatActivity {
     String currentQstUp,currentQstDown;
     int MY_PERMISSIONS_REQUEST_READ_STORAGE=0;
     private AdView mAdView;
+    private AdRequest adRequest;
     private InterstitialAd mInterstitialAd;
     boolean isDefault = true;
     boolean isFunny = false;
@@ -112,19 +118,62 @@ public class MainActivityCompatibility extends AppCompatActivity {
         bundle.putString(FirebaseAnalytics.Param.LEVEL, "main");
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LEVEL_START, bundle);
 
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-2471480338929808/6440025315");
-
-        mInterstitialAd.loadAd(new AdRequest.Builder().build());
-
-        mInterstitialAd.setAdListener(new AdListener() {
+        adRequest = new AdRequest.Builder().build();
+        InterstitialAd.load(context, "ca-app-pub-2471480338929808/6440025315", adRequest, new InterstitialAdLoadCallback() {
             @Override
-            public void onAdClosed() {
-                // Load the next interstitial.
-                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
+
             }
 
+            @Override
+            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                super.onAdLoaded(interstitialAd);
+                mInterstitialAd = interstitialAd;
+                mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                    @Override
+                    public void onAdClicked() {
+                        super.onAdClicked();
+                    }
+
+                    @Override
+                    public void onAdDismissedFullScreenContent() {
+                        super.onAdDismissedFullScreenContent();
+                        mInterstitialAd = null;
+                    }
+
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                        super.onAdFailedToShowFullScreenContent(adError);
+                        mInterstitialAd = null;
+                    }
+
+                    @Override
+                    public void onAdImpression() {
+                        super.onAdImpression();
+                    }
+
+                    @Override
+                    public void onAdShowedFullScreenContent() {
+                        super.onAdShowedFullScreenContent();
+                    }
+                });
+            }
         });
+//
+//        mInterstitialAd = new InterstitialAd(this);
+//        mInterstitialAd.setAdUnitId("ca-app-pub-2471480338929808/6440025315");
+//
+//        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+//
+//        mInterstitialAd.setAdListener(new AdListener() {
+//            @Override
+//            public void onAdClosed() {
+//                // Load the next interstitial.
+//                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+//            }
+//
+//        });
 
         mAdView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -669,8 +718,10 @@ public class MainActivityCompatibility extends AppCompatActivity {
 
                     questionsTillAd--;
                     if(questionsTillAd<0){
-                        if (mInterstitialAd.isLoaded()) {
-                            mInterstitialAd.show();
+                        if (mInterstitialAd != null) {
+                            mInterstitialAd.show(MainActivityCompatibility.this);
+                        } else {
+                            Log.e("ad", "The interstitial ad wasn't ready yet.");
                         }
                         questionsTillAd=20;
                     }
@@ -789,8 +840,10 @@ public class MainActivityCompatibility extends AppCompatActivity {
 
                     questionsTillAd--;
                     if(questionsTillAd<0){
-                        if (mInterstitialAd.isLoaded()) {
-                            mInterstitialAd.show();
+                        if (mInterstitialAd != null) {
+                            mInterstitialAd.show(MainActivityCompatibility.this);
+                        } else {
+                            Log.e("ad", "The interstitial ad wasn't ready yet.");
                         }
                         questionsTillAd=20;
                     }

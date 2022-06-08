@@ -1,21 +1,27 @@
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
-
+//apply plugin: 'io.fabric'
+apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.firebase.crashlytics'
 android {
     useLibrary 'org.apache.http.legacy'
-    compileSdkVersion 28
+    compileSdkVersion 32
     defaultConfig {
         applicationId "panafana.example.panaf.wouldyourather"
-        minSdkVersion 21
-        targetSdkVersion 28
-        versionCode 15
-        versionName "2.3"
+        minSdkVersion 23
+        targetSdkVersion 32
+        versionCode 17
+        versionName "2.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt']
         }
     }
 
@@ -37,58 +43,47 @@ android {
         }
     }
 
-    packagingOptions {
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/license.txt'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/notice.txt'
-
-    }
     compileOptions {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
     }
+    namespace 'panafana.example.panaf.wouldyourather'
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.1.0-alpha01'
-    implementation 'com.google.android.material:material:1.1.0-alpha02'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     //implementation 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    implementation 'com.google.android.gms:play-services-ads-lite:21.0.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation "com.mikepenz:materialdrawer:6.1.2"
-    implementation 'com.google.firebase:firebase-core:17.0.0'
+    implementation platform('com.google.firebase:firebase-bom:30.0.2')
 //required support lib modules
 
-    implementation 'androidx.recyclerview:recyclerview:1.1.0-alpha01'
-    implementation 'androidx.annotation:annotation:1.0.1'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.0-alpha02'
+    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.akexorcist:RoundCornerProgressBar:2.0.3'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:design:28.0.0'
-    implementation 'com.google.android.gms:play-services-ads:18.1.1'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'com.google.android.material:material:1.6.1'
+    //implementation 'com.google.android.gms:play-services-ads'
     // Check for v11.4.2 or higher
-    implementation 'com.google.firebase:firebase-core:17.0.1'
 
     // (Recommended) Add Analytics
-    implementation 'com.google.firebase:firebase-analytics:17.0.1'
+    implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.github.angads25:toggle:1.1.0'
     // Add dependency
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
-    implementation 'com.squareup.retrofit2:retrofit:2.6.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.6.0'
+    //implementation 'com.google.firebase:firebase-crashlytics-gradle'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.8.1'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.ybq:Android-SpinKit:1.2.0'
 
 
 
 }
-apply plugin: 'com.google.gms.google-services'
+
