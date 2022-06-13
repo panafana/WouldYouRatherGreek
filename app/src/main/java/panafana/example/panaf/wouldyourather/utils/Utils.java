@@ -15,7 +15,6 @@ public class Utils {
 
     ProgressDialog progress;
 
-
     public void show_progressBar(Context context) {
 
         progress = ProgressDialog.show(context, "", context.getResources().getString(R.string.please_wait), true);

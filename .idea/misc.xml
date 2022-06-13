@@ -3,6 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/panaf/StudioProjects/WouldYouRatherGreek/app/src/main/res/drawable/gradient.xml" value="0.2985" />
+        <entry key="..\:/Users/panaf/StudioProjects/WouldYouRatherGreek/app/src/main/res/drawable/rounded.xml" value="0.2985" />
+        <entry key="..\:/Users/panaf/StudioProjects/WouldYouRatherGreek/app/src/main/res/layout/activity_login2.xml" value="0.307518115942029" />
         <entry key="..\:/Users/panaf/StudioProjects/WouldYouRatherGreek/app/src/main/res/layout/activity_main.xml" value="0.225" />
       </map>
     </option>

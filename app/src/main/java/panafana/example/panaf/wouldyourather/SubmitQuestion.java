@@ -1,5 +1,6 @@
 package panafana.example.panaf.wouldyourather;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -26,8 +27,11 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
+import panafana.example.panaf.wouldyourather.utils.Manager;
+
 public class SubmitQuestion extends AppCompatActivity {
     Context ctx = this;
+    Activity activity = this;
     String result1;
     private FirebaseAnalytics mFirebaseAnalytics;
 
@@ -47,87 +51,12 @@ public class SubmitQuestion extends AppCompatActivity {
             public void onClick(View view) {
                 if(!(qst.getText().toString().equals(""))&&!(qst2.getText().toString().equals(""))){
                     String finalqst = qst.getText().toString() +" @ "+ qst2.getText().toString();
-                    SendQuestion s = new SendQuestion(finalqst);
-                    s.execute();
+                    new Manager().submitQuestion(ctx, activity, qst.getText().toString(),qst2.getText().toString(), mFirebaseAnalytics);
+//                    SendQuestion s = new SendQuestion(finalqst);
+//                    s.execute();
                 }
             }
         });
     }
 
-    public class SendQuestion extends AsyncTask<Void, Void, String> {
-        
-        final String mquestion;
-
-        SendQuestion(String question) {
-            mquestion = question;
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-            String reg_url = "http://83.212.84.230/submitquestion.php";
-            try {
-                URL url = new URL(reg_url);
-
-
-                Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("question", mquestion);
-                String query = builder.build().getEncodedQuery();
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(query);
-                writer.flush();
-                writer.close();
-                os.close();
-                conn.connect();
-                InputStream IS = conn.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(IS));
-                StringBuilder result = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    result.append(line);
-                }
-                // Pass data to onPostExecute method
-                String r = (result.toString());
-                IS.close();
-                result1=r;
-
-                Log.d("Response", r);
-                //httpURLConnection.connect();
-                conn.disconnect();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return "Connection Error";
-            }
-
-            if (result1.contains("Success")) {
-                return "Success";
-            } else {
-                return "Error";
-            }
-        }
-
-
-        @Override
-        protected void onPostExecute(final String success) {
-            if (success.equals("Success")) {
-                Bundle bundle = new Bundle();
-                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "submit question");
-                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.POST_SCORE, bundle);
-                finish();
-            } else {
-                Toast.makeText(ctx, "Error", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
 }

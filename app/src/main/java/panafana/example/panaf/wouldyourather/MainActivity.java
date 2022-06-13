@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
                             SharedPreferences.Editor SPE = SP.edit();
                             SPE.clear();
                             SPE.apply();
-                            Intent i = new Intent(MainActivity.this, LoginActivity.class);
+                            Intent i = new Intent(MainActivity.this, LoginActivity2.class);
                             startActivity(i);
                             finish();
                         }else if(id==R.id.general){

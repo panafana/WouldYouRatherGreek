@@ -1,10 +1,14 @@
 package panafana.example.panaf.wouldyourather.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -19,6 +23,7 @@ import java.util.ArrayList;
 
 import okhttp3.ResponseBody;
 import panafana.example.panaf.wouldyourather.LoginActivity;
+import panafana.example.panaf.wouldyourather.LoginActivity2;
 import panafana.example.panaf.wouldyourather.MainActivity;
 import panafana.example.panaf.wouldyourather.MainActivityCompatibility;
 import panafana.example.panaf.wouldyourather.R;
@@ -57,6 +62,9 @@ public class Manager {
 
         @POST("/android/submit-comment")
         Call<ResponseBody> submitComment(@Body JsonObject obj);
+
+        @POST("/android/submit-question")
+        Call<ResponseBody> submitQuestion(@Body JsonObject obj);
 
         @POST("/android/signin")
         Call<ResponseBody> login(@Body JsonObject obj);
@@ -501,8 +509,110 @@ public class Manager {
 
     }
 
+    public void submitQuestion(final Context context, Activity activity, String option1, String option2, FirebaseAnalytics firebaseAnalytics) {
+        final String serverUrl = context.getString(R.string.server_url);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("option1", option1);
+        jsonObject.addProperty("option2",option2);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface service = retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = service.submitQuestion(jsonObject);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        String responsestr = response.body().string();
+                        if (responsestr.equals("success")) {
+                            Bundle bundle = new Bundle();
+                            bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "submit question");
+                            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.POST_SCORE, bundle);
+                            activity.finish();
+                        } else {
+                            Toast.makeText(context, "Error", Toast.LENGTH_LONG).show();
+                        }
+
+                        Log.d("submitQuestion  stats", "Success");
+                        Log.d("submitQuestion  stats", responsestr);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("submitQuestion  stats","Error");
+                Toast.makeText(context, "Error", Toast.LENGTH_LONG).show();
+                t.printStackTrace();
+            }
+        });
+
+    }
+
 
     public void login(final String username, String password, Context context, final LoginActivity activity){
+        String serverUrl = context.getString(R.string.server_url);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("username", username);
+        jsonObject.addProperty("password", password );
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface favoritesService=retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = favoritesService.login(jsonObject);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
+                if (response.code() == 200) {
+                    try {
+                        if(response.body().string().equals("Male")||response.body().string().equals("Female")||response.body().string().equals("Non Binary")){
+                            Log.i("logged in","success");
+                            try {
+                                activity.login(true,username,response.body().string());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }else{
+                            try {
+                                activity.login(false,username,response.body().string());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else {
+                    Log.e("logged in","failed");
+                    try {
+                        activity.login(false,username,response.body().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("log-in failed","failed");
+                activity.login(false,username,t.getMessage());
+            }
+        });
+
+
+    }
+
+    public void login2(final String username, String password, Context context, final LoginActivity2 activity){
         String serverUrl = context.getString(R.string.server_url);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("username", username);

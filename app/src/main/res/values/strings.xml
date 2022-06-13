@@ -27,7 +27,25 @@
     <string name="gender_female">Γυναίκα</string>
     <string name="gender_other">Άλλο</string>
     <string name="insert_comment">Εισαγωγή σχολίου</string>
+    <string name="username_error">Συμπληρώστε το Ονομα Χρήστη</string>
+    <string name="password_error">Συμπληρώστε τον Κωδικό Πρόσβασης</string>
+    <string name="internet">Δεν έχετε πρόσβαση στο Internet</string>
 
+    <string name="title_activity_test">test</string>
+    <string name="title_section1">Section 1</string>
+
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_example">Example action</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="error_no_password">Παρακαλώ εισάγετε κωδικό</string>
+
+    <string name="please_wait">Παρακαλώ περιμένετε</string>
+    <string name="server_url">https://panafana.ddns.net/</string>
     <string-array name="genders">
         <item>Male</item>
         <item>Female</item>
@@ -39,22 +57,7 @@
         <item>Δύσκολες</item>
         <item>Για ζευγάρια</item>
         <item>Αηδιαστικές</item>
-       <!-- <item>Ανησυχητικές</item>
+        <!-- <item>Ανησυχητικές</item>
         <item>Αηδιαστικές</item>-->
     </string-array>
-
-    <string name="title_activity_test">test</string>
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
-
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <string name="action_example">Example action</string>
-
-    <string name="action_settings">Settings</string>
-    <string name="error_no_password">Παρακαλώ εισάγετε κωδικό</string>
-    <string name="please_wait">Παρακαλώ περιμένετε</string>
-    <string name="server_url">https://panafana.ddns.net/</string>
 </resources>
