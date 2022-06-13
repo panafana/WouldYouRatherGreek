@@ -28,6 +28,7 @@ import panafana.example.panaf.wouldyourather.MainActivity;
 import panafana.example.panaf.wouldyourather.MainActivityCompatibility;
 import panafana.example.panaf.wouldyourather.R;
 import panafana.example.panaf.wouldyourather.RegisterActivity;
+import panafana.example.panaf.wouldyourather.RegisterActivity2;
 import panafana.example.panaf.wouldyourather.models.Comment;
 import panafana.example.panaf.wouldyourather.models.Question;
 import panafana.example.panaf.wouldyourather.models.Stats;
@@ -670,6 +671,64 @@ public class Manager {
     }
 
     public void signup(String email,final String username, String password,String gender, Context context, final RegisterActivity activity){
+        String serverUrl = context.getString(R.string.server_url);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("username", username);
+        jsonObject.addProperty("password", password );
+        jsonObject.addProperty("email", email );
+        jsonObject.addProperty("gender", gender );
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface favoritesService=retrofit.create(RetrofitInterface.class);
+        Call<ResponseBody> call = favoritesService.signup(jsonObject);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
+
+                if (response.code() == 200) {
+
+                    try {
+                        String resp = response.body().string();
+                        if(resp.equals("Success")){
+                            Log.e("signup in","success");
+                            activity.register(true,username,resp);
+                        }else{
+                            Log.e("signup in",resp);
+                            activity.register(false,username,resp);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else {
+
+                    Log.e("signup in","failed");
+                    try {
+                        String resp = response.body().string();
+                        activity.register(false,username,resp);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("signup failed","failed");
+                activity.register(false,username,t.getMessage());
+            }
+        });
+
+
+    }
+
+
+    public void signup2(String email,final String username, String password,String gender, Context context, final RegisterActivity2 activity){
         String serverUrl = context.getString(R.string.server_url);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("username", username);

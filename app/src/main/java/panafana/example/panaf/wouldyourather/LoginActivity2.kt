@@ -14,8 +14,8 @@ import panafana.example.panaf.wouldyourather.utils.Utils
 
 class LoginActivity2 : AppCompatActivity() {
     private lateinit var binding: ActivityLogin2Binding
-    val fireabase = FirebaseAnalytics.getInstance(this)
-    val utils = Utils()
+    private val fireabase = FirebaseAnalytics.getInstance(this)
+    private val utils = Utils()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLogin2Binding.inflate(this.layoutInflater)
@@ -42,7 +42,7 @@ class LoginActivity2 : AppCompatActivity() {
         binding.emailSignInButton.setOnClickListener { loginListener() }
 
         binding.registerButton.setOnClickListener {
-            val i = Intent(this, RegisterActivity::class.java)
+            val i = Intent(this, RegisterActivity2::class.java)
             startActivity(i) }
 
         binding.offlineButton.setOnClickListener {
@@ -71,19 +71,15 @@ class LoginActivity2 : AppCompatActivity() {
         val sPE = sP.edit()
         val sPE2 = sP2.edit()
         if (l) {
-            sPE2.putString("username", username)
-            sPE2.apply()
+            sPE2.putString("username", username).apply()
             if (gender == "Male") {
-                sPE.putString("gender", "male")
-                sPE.apply()
+                sPE.putString("gender", "male").apply()
                 //Log.d("gender", "male")
             } else if (gender == "Female") {
-                sPE.putString("gender", "female")
-                sPE.apply()
+                sPE.putString("gender", "female").apply()
                 //Log.d("gender", "female")
             } else {
-                sPE.putString("gender", "other")
-                sPE.apply()
+                sPE.putString("gender", "other").apply()
                 //Log.d("gender", "other")
             }
             val bundle = Bundle()

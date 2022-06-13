@@ -29,7 +29,9 @@
     <string name="insert_comment">Εισαγωγή σχολίου</string>
     <string name="username_error">Συμπληρώστε το Ονομα Χρήστη</string>
     <string name="password_error">Συμπληρώστε τον Κωδικό Πρόσβασης</string>
+    <string name="email_error">Συμπληρώστε το Email</string>
     <string name="internet">Δεν έχετε πρόσβαση στο Internet</string>
+    <string name="register_success">Επιτυχής εγγραφή!</string>
 
     <string name="title_activity_test">test</string>
     <string name="title_section1">Section 1</string>
