@@ -2,6 +2,7 @@ package panafana.example.panaf.wouldyourather;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -53,8 +54,18 @@ import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.play.core.review.ReviewException;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
+import com.google.android.play.core.review.model.ReviewErrorCode;
+import com.google.android.ump.ConsentForm;
+import com.google.android.ump.ConsentInformation;
+import com.google.android.ump.ConsentRequestParameters;
+import com.google.android.ump.UserMessagingPlatform;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -87,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
     private String getStatsUrl ="http://83.212.84.230/getstats.php";
     private String commentsUrl ="http://83.212.84.230/getcomments.php";
     int globalI =0,newquestionscount=0;
-    int showstats,buttonPressed=0,questionsTillAd=20;
+    int showstats,buttonPressed=0,questionsTillAd=20,questionsTillReview=25;
     float x=0,y=0,xu=0,yu=0;
     String currentQstUp,currentQstDown;
     private NavigationView navigationView;
@@ -129,6 +140,11 @@ public class MainActivity extends AppCompatActivity {
     Manager manager;
     Context context;
     ArrayList<Question> allquestions;
+    ReviewManager reviewManager;
+    Task<ReviewInfo> request;
+    Activity activity = this;
+    private ConsentInformation consentInformation;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,6 +156,41 @@ public class MainActivity extends AppCompatActivity {
         //MobileAds.initialize(this,"ca-app-pub-2471480338929808~1664063554");
         context = this;
         adRequest = new AdRequest.Builder().build();
+        reviewManager = ReviewManagerFactory.create(context);
+        request = reviewManager.requestReviewFlow();
+
+        // Create a ConsentRequestParameters object.
+        ConsentRequestParameters params = new ConsentRequestParameters
+                .Builder()
+                .build();
+
+        consentInformation = UserMessagingPlatform.getConsentInformation(this);
+        consentInformation.requestConsentInfoUpdate(
+                this,
+                params,
+                (ConsentInformation.OnConsentInfoUpdateSuccessListener) () -> {
+                    UserMessagingPlatform.loadAndShowConsentFormIfRequired(
+                            this,
+                            (ConsentForm.OnConsentFormDismissedListener) loadAndShowError -> {
+                                if (loadAndShowError != null) {
+                                    // Consent gathering failed.
+                                    Log.w("LOG", String.format("%s: %s",
+                                            loadAndShowError.getErrorCode(),
+                                            loadAndShowError.getMessage()));
+                                }
+
+                                // Consent has been gathered.
+                            }
+                    );
+
+                },
+                (ConsentInformation.OnConsentInfoUpdateFailureListener) requestConsentError -> {
+                    // Consent gathering failed.
+                    Log.w("LOG", String.format("%s: %s",
+                            requestConsentError.getErrorCode(),
+                            requestConsentError.getMessage()));
+                });
+
         InterstitialAd.load(context, "ca-app-pub-2471480338929808/6440025315", adRequest, new InterstitialAdLoadCallback() {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
@@ -796,16 +847,22 @@ public class MainActivity extends AppCompatActivity {
 
 
         for(int i=0;i<allquestions.size();i++){
-            if(allquestions.get(i).getCategory().equals("default")){
-                defaultQuestions.add(allquestions.get(i));
-            }else if(allquestions.get(i).getCategory().equals("funny")){
-                funnyQuestions.add(allquestions.get(i));
-            }else if(allquestions.get(i).getCategory().equals("couples")){
-                couplesQuestions.add(allquestions.get(i));
-            }else if(allquestions.get(i).getCategory().equals("grose")){
-                groseQuestions.add(allquestions.get(i));
-            }else if(allquestions.get(i).getCategory().equals("disturbing")){
-                disturbingQuestions.add(allquestions.get(i));
+            switch (allquestions.get(i).getCategory()) {
+                case "default":
+                    defaultQuestions.add(allquestions.get(i));
+                    break;
+                case "funny":
+                    funnyQuestions.add(allquestions.get(i));
+                    break;
+                case "couples":
+                    couplesQuestions.add(allquestions.get(i));
+                    break;
+                case "grose":
+                    groseQuestions.add(allquestions.get(i));
+                    break;
+                case "disturbing":
+                    disturbingQuestions.add(allquestions.get(i));
+                    break;
             }
         }
 
@@ -1180,6 +1237,29 @@ public class MainActivity extends AppCompatActivity {
 
 
                         questionsTillAd=20;
+
+
+
+
+                    }
+                    questionsTillReview--;
+                    if(questionsTillReview<0){
+                        request.addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                // We can get the ReviewInfo object
+                                ReviewInfo reviewInfo = task.getResult();
+                                Task<Void> flow = reviewManager.launchReviewFlow(activity, reviewInfo);
+                                flow.addOnCompleteListener(task1 -> {
+                                    // The flow has finished. The API does not indicate whether the user
+                                    // reviewed or not, or even whether the review dialog was shown. Thus, no
+                                    // matter the result, we continue our app flow.
+                                });
+                            } else {
+                                // There was some problem, log or handle the error code.
+                                @ReviewErrorCode int reviewErrorCode = ((ReviewException) task.getException()).getErrorCode();
+                            }
+                        });
+                        questionsTillReview = 25;
                     }
 
                     Manager manager = new Manager();
@@ -1318,6 +1398,26 @@ public class MainActivity extends AppCompatActivity {
                             Log.e("ad", "The interstitial ad wasn't ready yet.");
                         }
                         questionsTillAd=20;
+                    }
+
+                    questionsTillReview--;
+                    if(questionsTillReview<0){
+                        request.addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                // We can get the ReviewInfo object
+                                ReviewInfo reviewInfo = task.getResult();
+                                Task<Void> flow = reviewManager.launchReviewFlow(activity, reviewInfo);
+                                flow.addOnCompleteListener(task1 -> {
+                                    // The flow has finished. The API does not indicate whether the user
+                                    // reviewed or not, or even whether the review dialog was shown. Thus, no
+                                    // matter the result, we continue our app flow.
+                                });
+                            } else {
+                                // There was some problem, log or handle the error code.
+                                @ReviewErrorCode int reviewErrorCode = ((ReviewException) task.getException()).getErrorCode();
+                            }
+                        });
+                        questionsTillReview = 25;
                     }
 
 

@@ -287,7 +287,7 @@
                 ads:layout_constraintBottom_toBottomOf="parent"
                 ads:layout_constraintEnd_toEndOf="parent"
                 ads:layout_constraintStart_toStartOf="@+id/guideline4"
-                ads:layout_constraintTop_toTopOf="@+id/guideline3"></com.google.android.gms.ads.AdView>
+                ads:layout_constraintTop_toTopOf="@+id/guideline3" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
