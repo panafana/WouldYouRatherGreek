@@ -47,7 +47,7 @@
     <string name="error_no_password">Παρακαλώ εισάγετε κωδικό</string>
 
     <string name="please_wait">Παρακαλώ περιμένετε</string>
-    <string name="server_url">https://panafana.ddns.net/</string>
+    <string name="server_url">https://panafana.duckdns.org/</string>
     <string-array name="genders">
         <item>Male</item>
         <item>Female</item>

@@ -5,13 +5,13 @@ apply plugin: 'org.jetbrains.kotlin.android'
 //apply plugin: 'com.google.firebase.crashlytics'
 android {
     useLibrary 'org.apache.http.legacy'
-    compileSdkVersion 32
+    compileSdkVersion 34
     defaultConfig {
         applicationId "panafana.example.panaf.wouldyourather"
         minSdkVersion 23
-        targetSdkVersion 32
-        versionCode 17
-        versionName "2.5"
+        targetSdkVersion 34
+        versionCode 18
+        versionName "2.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
